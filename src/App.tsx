@@ -1,18 +1,20 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
+import { Landing } from './pages/Landing'
 import { Inbox } from './pages/Inbox'
 import { AgentEditor } from './pages/AgentEditor'
 import { WidgetConfig } from './pages/WidgetConfig'
 
 function App() {
   return (
-    <BrowserRouter basename="/admin">
+    <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/inbox" replace />} />
-        <Route path="/inbox" element={<Inbox />} />
-        <Route path="/agent-editor" element={<AgentEditor />} />
-        <Route path="/widget-config" element={<WidgetConfig />} />
-        <Route path="*" element={<Navigate to="/inbox" replace />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/admin" element={<Navigate to="/admin/inbox" replace />} />
+        <Route path="/admin/inbox" element={<Inbox />} />
+        <Route path="/admin/agent-editor" element={<AgentEditor />} />
+        <Route path="/admin/widget-config" element={<WidgetConfig />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
       <Toaster

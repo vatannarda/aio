@@ -73,15 +73,36 @@ export function Inbox() {
     <Layout title="Dashboard & Gelen Kutusu" description="Tüm konuşmaları ve metrikleri takip edin">
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <StatCard title="Toplam Konuşma" value={stats.totalConversations} icon={MessageSquare} />
-          <StatCard title="Aktif Kullanıcılar" value={stats.activeUsers} icon={Users} />
-          <StatCard title="Token Tüketimi" value={`${stats.tokenConsumption}K`} icon={Zap} />
+          {loading ? (
+            [1, 2, 3].map((idx) => (
+              <div key={idx} className="glass-card p-6 animate-pulse">
+                <div className="skeleton-circle w-10 h-10 mb-4" />
+                <div className="skeleton-text w-1/2 mb-2" />
+                <div className="skeleton-text w-1/3" />
+              </div>
+            ))
+          ) : (
+            <>
+              <StatCard title="Toplam Konuşma" value={stats.totalConversations} icon={MessageSquare} />
+              <StatCard title="Aktif Kullanıcılar" value={stats.activeUsers} icon={Users} />
+              <StatCard title="Token Tüketimi" value={`${stats.tokenConsumption}K`} icon={Zap} />
+            </>
+          )}
         </div>
 
         <Card title="Canlı Sohbet Geçmişi">
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin h-8 w-8 border-4 border-electric-blue border-t-transparent rounded-full" />
+            <div className="space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex gap-4 p-4 glass-card bg-white/[0.02] animate-pulse">
+                  <div className="skeleton w-12 h-12 rounded-lg" />
+                  <div className="flex-1 space-y-3">
+                    <div className="skeleton-text w-1/4" />
+                    <div className="skeleton-text w-3/4" />
+                  </div>
+                  <div className="skeleton-text w-32" />
+                </div>
+              ))}
             </div>
           ) : chatLogs.length === 0 ? (
             <div className="text-center py-12 text-slate-400">

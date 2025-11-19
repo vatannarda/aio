@@ -1,6 +1,7 @@
 import type { AgentConfig, ChatLog, Stats, WidgetConfig } from '@/types'
 
 const WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL
+const CHAT_WEBHOOK_URL = 'https://n8n.aio.web.tr/webhook/chat'
 
 function ensureWebhookBase() {
   if (!WEBHOOK_URL) {
@@ -22,42 +23,51 @@ async function handleResponse<T>(response: Response): Promise<T> {
   return payload as T
 }
 
+async function request<T>(url: string, options?: RequestInit) {
+  const response = await fetch(url, options)
+  return handleResponse<T>(response)
+}
+
 export const api = {
   async getChatLogs(): Promise<ChatLog[]> {
     const baseUrl = ensureWebhookBase()
-    const response = await fetch(`${baseUrl}/get-logs`)
-    return handleResponse<ChatLog[]>(response)
+    return request<ChatLog[]>(`${baseUrl}/get-logs`)
   },
 
   async getDashboardStats(): Promise<Stats> {
     const baseUrl = ensureWebhookBase()
-    const response = await fetch(`${baseUrl}/stats`)
-    return handleResponse<Stats>(response)
+    return request<Stats>(`${baseUrl}/stats`)
   },
 
   async updateAgentConfig(payload: AgentConfig): Promise<{ success: boolean }> {
     const baseUrl = ensureWebhookBase()
-    const response = await fetch(`${baseUrl}/update-prompt`, {
+    return request<{ success: boolean }>(`${baseUrl}/update-prompt`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(payload),
     })
-
-    return handleResponse<{ success: boolean }>(response)
   },
 
   async updateWidgetConfig(payload: WidgetConfig): Promise<{ success: boolean }> {
     const baseUrl = ensureWebhookBase()
-    const response = await fetch(`${baseUrl}/update-widget`, {
+    return request<{ success: boolean }>(`${baseUrl}/update-widget`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(payload),
     })
+  },
 
-    return handleResponse<{ success: boolean }>(response)
+  async sendChatMessage(message: string): Promise<{ reply: string }> {
+    return request<{ reply: string }>(CHAT_WEBHOOK_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message }),
+    })
   },
 }
