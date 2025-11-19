@@ -105,7 +105,7 @@ Bu uygulama `www.aio.web.tr/admin` altında çalışacak şekilde yapılandırı
 
 `.env` dosyasında:
 ```
-VITE_N8N_WEBHOOK_URL=https://n8n.aio.web.tr/webhook/f523ccf7-be62-40de-9d4e-115e151dc102
+VITE_N8N_WEBHOOK_URL=https://n8n.aio.web.tr/webhook-test/chat
 ```
 
 ### API Endpoints

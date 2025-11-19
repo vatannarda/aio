@@ -54,13 +54,14 @@ server {
         }
     }
 
-    # N8N Webhook Proxy (Opsiyonel)
-    location /webhook/ {
-        proxy_pass https://n8n.aio.web.tr/webhook/;
-        proxy_set_header Host $host;
+    # N8N Webhook Proxy (Opsiyonel - CORS sorunları için)
+    location /webhook-test/ {
+        proxy_pass https://n8n.aio.web.tr/webhook-test/;
+        proxy_set_header Host n8n.aio.web.tr;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_ssl_server_name on;
     }
 
     # SSL Configuration
@@ -82,7 +83,7 @@ server {
 Production ortamında `.env` dosyasını doğru şekilde yapılandırın:
 
 ```bash
-VITE_N8N_WEBHOOK_URL=https://n8n.aio.web.tr/webhook/f523ccf7-be62-40de-9d4e-115e151dc102
+VITE_N8N_WEBHOOK_URL=https://n8n.aio.web.tr/webhook-test/chat
 ```
 
 ⚠️ **Güvenlik Notu:** `.env` dosyasını Git'e commit etmeyin!
@@ -192,7 +193,7 @@ services:
     ports:
       - "3000:80"
     environment:
-      - VITE_N8N_WEBHOOK_URL=https://n8n.aio.web.tr/webhook/f523ccf7-be62-40de-9d4e-115e151dc102
+      - VITE_N8N_WEBHOOK_URL=https://n8n.aio.web.tr/webhook-test/chat
     restart: unless-stopped
 ```
 
