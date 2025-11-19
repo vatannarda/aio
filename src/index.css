@@ -1,0 +1,30 @@
+@import '@fontsource/inter';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-950 text-slate-200 antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-xl;
+  }
+  
+  .glass-header {
+    @apply bg-white/5 backdrop-blur-md border-b border-white/10;
+  }
+  
+  .gradient-primary {
+    @apply bg-gradient-to-r from-electric-blue to-neon-purple;
+  }
+  
+  .hover-glow {
+    @apply transition-all duration-300 hover:shadow-lg hover:shadow-electric-blue/20;
+  }
+}
