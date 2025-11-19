@@ -2,9 +2,9 @@ import { Brain, Bot, MessageSquare } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
 const navigation = [
-  { name: 'Dashboard', to: '/inbox', icon: MessageSquare },
-  { name: 'Ajan Beyni', to: '/agent-editor', icon: Brain },
-  { name: 'Chatbot Ayarları', to: '/widget-config', icon: Bot },
+  { name: 'Dashboard', to: '/admin/inbox', icon: MessageSquare },
+  { name: 'Ajan Beyni', to: '/admin/agent-editor', icon: Brain },
+  { name: 'Chatbot Ayarları', to: '/admin/widget-config', icon: Bot },
 ]
 
 export function Sidebar() {
@@ -28,7 +28,7 @@ export function Sidebar() {
               to={item.to}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 text-sm font-medium
-                ${isActive ? 'gradient-primary text-white shadow-lg shadow-electric-blue/30' : 'text-slate-300 hover:bg-white/5'}`
+                ${isActive ? 'gradient-primary text-white shadow-lg shadow-electric-blue/30' : 'text-slate-300 hover:bg-white/5 hover-glow'}`
               }
             >
               <item.icon size={18} />
@@ -39,14 +39,12 @@ export function Sidebar() {
       </div>
 
       <div className="glass-card bg-white/5 border border-white/10 p-4 flex items-center gap-3">
-        <img
-          src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=200&q=80"
-          alt="Kullanıcı"
-          className="w-12 h-12 rounded-xl object-cover border border-white/20"
-        />
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-electric-blue to-neon-purple flex items-center justify-center text-white font-bold text-lg border border-white/20">
+          MT
+        </div>
         <div>
-          <p className="text-sm text-slate-400">Super Admin</p>
-          <p className="text-white font-semibold">Elara Systems</p>
+          <p className="text-white font-semibold">Mehmet Tutar</p>
+          <p className="text-sm text-slate-400">Kurucu</p>
         </div>
       </div>
     </aside>
