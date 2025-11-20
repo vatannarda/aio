@@ -7,7 +7,7 @@ function ensureWebhookBase() {
   if (!WEBHOOK_URL) {
     throw new Error('VITE_N8N_WEBHOOK_URL tanımlı değil. Lütfen .env dosyasını kontrol edin.')
   }
-  return WEBHOOK_URL
+  return WEBHOOK_URL.replace(/\/$/, '')
 }
 
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -39,9 +39,9 @@ export const api = {
     return request<Stats>(`${baseUrl}/stats`)
   },
 
-  async updateAgentConfig(payload: AgentConfig): Promise<{ success: boolean }> {
+  async updateAgentConfig(payload: AgentConfig & { role_type: string; name?: string }): Promise<{ success: boolean }> {
     const baseUrl = ensureWebhookBase()
-    return request<{ success: boolean }>(`${baseUrl}/update-prompt`, {
+    return request<{ success: boolean }>(`${baseUrl}/update-agent`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

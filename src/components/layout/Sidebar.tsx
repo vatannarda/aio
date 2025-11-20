@@ -9,7 +9,7 @@ const navigation = [
 
 export function Sidebar() {
   return (
-    <aside className="glass-card h-full w-64 flex flex-col justify-between p-6">
+    <aside className="glass-card h-full w-full flex flex-col justify-between p-6">
       <div>
         <div className="flex items-center gap-3 mb-8">
           <div className="gradient-primary p-3 rounded-xl">
@@ -27,7 +27,7 @@ export function Sidebar() {
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 text-sm font-medium
+                `flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 text-sm font-medium
                 ${isActive ? 'gradient-primary text-white shadow-lg shadow-electric-blue/30' : 'text-slate-300 hover:bg-white/5 hover-glow'}`
               }
             >

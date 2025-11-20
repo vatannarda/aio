@@ -18,7 +18,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         <textarea
           ref={ref}
           className={`glass-card px-4 py-3 text-slate-200 placeholder:text-slate-500 font-mono
-            focus:outline-none focus:ring-2 focus:ring-electric-blue/50 transition-all duration-300
+            focus:outline-none focus:ring-2 focus:ring-electric-blue/60 focus:ring-offset-2 focus:ring-offset-[#05060C]
+            focus:shadow-[0_0_30px_rgba(59,130,246,0.35)]
+            transition-all duration-300
             ${className}`}
           {...props}
         />

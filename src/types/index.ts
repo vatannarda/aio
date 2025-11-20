@@ -8,6 +8,8 @@ export interface ChatLog {
 }
 
 export interface AgentConfig {
+  name: string;
+  roleType: 'sales' | 'support' | 'general';
   model: 'gemini-pro' | 'gemini-flash' | 'gpt-4o';
   systemPrompt: string;
   temperature: number;

@@ -10,11 +10,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ children, variant = 'primary', size = 'md', loading = false, className = '', disabled, ...props }, ref) => {
-    const baseClasses = 'font-medium rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-electric-blue/50'
+    const baseClasses = 'font-medium rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-electric-blue/60 focus:ring-offset-2 focus:ring-offset-[#05060C] focus:shadow-[0_0_30px_rgba(59,130,246,0.35)]'
     
     const variantClasses = {
-      primary: 'gradient-primary text-white hover:shadow-xl hover:shadow-electric-blue/40 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed',
-      secondary: 'glass-card hover-glow text-slate-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed',
+      primary: 'gradient-primary text-white hover:shadow-[0_8px_40px_rgba(59,130,246,0.5)] hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed',
+      secondary: 'glass-card hover-glow text-slate-200 disabled:opacity-50 disabled:cursor-not-allowed',
       ghost: 'text-slate-300 hover:bg-white/5 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed',
     }
     
