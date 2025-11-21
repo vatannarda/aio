@@ -107,10 +107,10 @@ export function Chatbot() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className={`fixed z-[60] transition-all duration-300 ${isOpen ? 'inset-0 sm:inset-auto sm:bottom-6 sm:right-6' : 'bottom-6 right-6'}`}>
       {isOpen ? (
-        <div className="glass-card border border-white/10 rounded-2xl shadow-2xl w-96 h-[600px] flex flex-col animate-in">
-          <div className="gradient-primary px-6 py-4 rounded-t-2xl flex items-center justify-between">
+        <div className="glass-card flex flex-col animate-in w-full h-[100dvh] sm:w-96 sm:h-[600px] rounded-none sm:rounded-2xl border-0 sm:border border-white/10 shadow-2xl bg-[#0B0F19]/95 sm:bg-white/5 backdrop-blur-xl">
+          <div className="gradient-primary px-6 pb-4 pt-[calc(env(safe-area-inset-top)+16px)] sm:pt-4 rounded-t-none sm:rounded-t-2xl flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="bg-white/20 p-2 rounded-lg">
                 <Bot className="text-white" size={24} />

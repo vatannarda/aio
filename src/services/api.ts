@@ -39,14 +39,20 @@ export const api = {
     return request<Stats>(`${baseUrl}/stats`)
   },
 
-  async updateAgentConfig(payload: AgentConfig & { role_type: string; name?: string }): Promise<{ success: boolean }> {
+  async updateAgentConfig(config: AgentConfig): Promise<{ success: boolean }> {
     const baseUrl = ensureWebhookBase()
     return request<{ success: boolean }>(`${baseUrl}/update-agent`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        name: config.name,
+        role_type: config.roleType,
+        model: config.model,
+        system_prompt: config.systemPrompt,
+        temperature: config.temperature,
+      }),
     })
   },
 

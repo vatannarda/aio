@@ -50,7 +50,6 @@ export function AgentEditor() {
       await api.updateAgentConfig({
         ...config,
         name: sanitizedName,
-        role_type: config.roleType,
       })
       setConfig((prev) => ({ ...prev, name: sanitizedName }))
       toast.success('Ajan Beyni Güncellendi')
