@@ -1,44 +1,54 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
-import { forwardRef } from 'react'
+import React from 'react';
+import { motion, HTMLMotionProps } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  children: ReactNode
-  variant?: 'primary' | 'secondary' | 'ghost'
-  size?: 'sm' | 'md' | 'lg'
-  loading?: boolean
+interface ButtonProps extends HTMLMotionProps<"button"> {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  isLoading?: boolean;
+  children: React.ReactNode;
 }
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ children, variant = 'primary', size = 'md', loading = false, className = '', disabled, ...props }, ref) => {
-    const baseClasses = 'font-medium rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-electric-blue/60 focus:ring-offset-2 focus:ring-offset-[#05060C] focus:shadow-[0_0_30px_rgba(59,130,246,0.35)]'
-    
-    const variantClasses = {
-      primary: 'gradient-primary text-white hover:shadow-[0_8px_40px_rgba(59,130,246,0.5)] hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed',
-      secondary: 'glass-card hover-glow text-slate-200 disabled:opacity-50 disabled:cursor-not-allowed',
-      ghost: 'text-slate-300 hover:bg-white/5 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed',
-    }
-    
-    const sizeClasses = {
-      sm: 'px-3 py-1.5 text-sm',
-      md: 'px-4 py-2 text-base',
-      lg: 'px-6 py-3 text-lg',
-    }
-    
-    const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`
+const Button: React.FC<ButtonProps> = ({
+  className,
+  variant = 'primary',
+  size = 'md',
+  isLoading = false,
+  children,
+  disabled,
+  ...props
+}) => {
+  const variants = {
+    primary: "bg-gradient-to-r from-electric-blue to-indigo-600 text-white shadow-lg shadow-electric-blue/25 hover:shadow-electric-blue/40 border border-white/10",
+    secondary: "bg-white/10 text-white hover:bg-white/20 border border-white/5",
+    outline: "bg-transparent border border-white/20 text-slate-300 hover:border-electric-blue/50 hover:text-white hover:bg-electric-blue/5",
+    ghost: "bg-transparent text-slate-400 hover:text-white hover:bg-white/5",
+  };
 
-    return (
-      <button ref={ref} className={classes} disabled={disabled || loading} {...props}>
-        {loading ? (
-          <span className="flex items-center gap-2">
-            <span className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full" />
-            Yükleniyor...
-          </span>
-        ) : (
-          children
-        )}
-      </button>
-    )
-  }
-)
+  const sizes = {
+    sm: "px-3 py-1.5 text-xs",
+    md: "px-5 py-2.5 text-sm",
+    lg: "px-8 py-3.5 text-base",
+  };
 
-Button.displayName = 'Button'
+  return (
+    <motion.button
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      className={cn(
+        "relative inline-flex items-center justify-center rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none",
+        variants[variant],
+        sizes[size],
+        className
+      )}
+      disabled={disabled || isLoading}
+      {...props}
+    >
+      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+      {children}
+    </motion.button>
+  );
+};
+
+export default Button;

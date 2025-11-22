@@ -1,79 +1,83 @@
-import type { AgentConfig, ChatLog, Stats, WidgetConfig } from '@/types'
+import axios, { AxiosInstance, AxiosError } from 'axios';
+import toast from 'react-hot-toast';
 
-const WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL
-const CHAT_WEBHOOK_URL = 'https://n8n.aio.web.tr/webhook/chat'
-
-function ensureWebhookBase() {
-  if (!WEBHOOK_URL) {
-    throw new Error('VITE_N8N_WEBHOOK_URL tanımlı değil. Lütfen .env dosyasını kontrol edin.')
+const getBaseUrl = (): string => {
+  const envUrl = import.meta.env.VITE_N8N_WEBHOOK_URL;
+  if (!envUrl) {
+    console.error("VITE_N8N_WEBHOOK_URL is not defined in environment variables.");
+    return '';
   }
-  return WEBHOOK_URL.replace(/\/$/, '')
-}
+  // Remove trailing slash if present
+  return envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl;
+};
 
-async function handleResponse<T>(response: Response): Promise<T> {
-  const contentType = response.headers.get('content-type') ?? ''
-  const isJson = contentType.includes('application/json')
-  const payload = isJson ? await response.json() : await response.text()
+const api: AxiosInstance = axios.create({
+  baseURL: getBaseUrl(),
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeout: 10000, // 10 seconds timeout
+});
 
-  if (!response.ok) {
-    const errorMessage = typeof payload === 'string' ? payload : payload?.message ?? 'Unknown error'
-    throw new Error(errorMessage)
+// Interceptor for error handling
+api.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    let message = 'An unexpected error occurred.';
+    if (error.message === 'Network Error') {
+      message = 'Network Error: Please check your internet connection or server status.';
+    } else if (error.response) {
+      message = `Server Error: ${error.response.statusText} (${error.response.status})`;
+    } else if (error.request) {
+      message = 'No response received from the server.';
+    }
+    
+    // We don't toast here to allow custom handling, but we could. 
+    // For now, we just return the rejected promise with a clean error message.
+    console.error('API Error:', error);
+    return Promise.reject(new Error(message));
   }
+);
 
-  return payload as T
+export interface AgentConfig {
+  name: string;
+  role_type: 'sales' | 'support' | 'general';
+  model: string;
+  system_prompt: string;
+  temperature?: number;
 }
 
-async function request<T>(url: string, options?: RequestInit) {
-  const response = await fetch(url, options)
-  return handleResponse<T>(response)
+export interface ChatMessage {
+  message: string;
 }
 
-export const api = {
-  async getChatLogs(): Promise<ChatLog[]> {
-    const baseUrl = ensureWebhookBase()
-    return request<ChatLog[]>(`${baseUrl}/get-logs`)
-  },
-
-  async getDashboardStats(): Promise<Stats> {
-    const baseUrl = ensureWebhookBase()
-    return request<Stats>(`${baseUrl}/stats`)
-  },
-
-  async updateAgentConfig(config: AgentConfig): Promise<{ success: boolean }> {
-    const baseUrl = ensureWebhookBase()
-    return request<{ success: boolean }>(`${baseUrl}/update-agent`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name: config.name,
-        role_type: config.roleType,
-        model: config.model,
-        system_prompt: config.systemPrompt,
-        temperature: config.temperature,
-      }),
-    })
-  },
-
-  async updateWidgetConfig(payload: WidgetConfig): Promise<{ success: boolean }> {
-    const baseUrl = ensureWebhookBase()
-    return request<{ success: boolean }>(`${baseUrl}/update-widget`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    })
-  },
-
-  async sendChatMessage(message: string): Promise<{ reply: string }> {
-    return request<{ reply: string }>(CHAT_WEBHOOK_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ message }),
-    })
-  },
+export interface ChatResponse {
+  reply: string;
 }
+
+export const agentService = {
+  updateAgent: async (config: AgentConfig) => {
+    try {
+      const response = await api.post('/update-agent', config);
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  },
+};
+
+export const chatService = {
+  sendMessage: async (message: string): Promise<string> => {
+    try {
+      // The prompt implies the chat webhook might be different or relative.
+      // "API: POST https://n8n.aio.web.tr/webhook/chat"
+      // If base is https://n8n.aio.web.tr/webhook, then /chat is correct.
+      const response = await api.post<ChatResponse>('/chat', { message });
+      return response.data.reply;
+    } catch (error: any) {
+      throw error;
+    }
+  },
+};
+
+export default api;
