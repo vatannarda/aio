@@ -1,52 +1,105 @@
-import { Brain, Bot, MessageSquare } from 'lucide-react'
-import { NavLink } from 'react-router-dom'
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { LayoutDashboard, MessageSquare, Settings, Bot, X, LogOut } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-const navigation = [
-  { name: 'Dashboard', to: '/admin/inbox', icon: MessageSquare },
-  { name: 'Ajan Beyni', to: '/admin/agent-editor', icon: Brain },
-  { name: 'Chatbot Ayarları', to: '/admin/widget-config', icon: Bot },
-]
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
 
-export function Sidebar() {
-  return (
-    <aside className="glass-card h-full w-full flex flex-col justify-between p-6">
-      <div>
-        <div className="flex items-center gap-3 mb-8">
-          <div className="gradient-primary p-3 rounded-xl">
-            <Bot className="text-white" size={24} />
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
+  const menuItems = [
+    // Prompt asked for "Ajan Beyni (Agent Editor)" - matching existing "AgentEditor" page
+    // and "Canlı Chatbot" which is on landing page/widget.
+    // I will add generic links for now fitting a SaaS panel.
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
+    { icon: Bot, label: 'Agent Editor', path: '/agent-editor' },
+    { icon: MessageSquare, label: 'Inbox', path: '/inbox' },
+    { icon: Settings, label: 'Settings', path: '/settings' },
+  ];
+
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full text-slate-300">
+      <div className="p-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-electric-blue to-neon-purple flex items-center justify-center shadow-lg shadow-electric-blue/20">
+            <span className="font-bold text-white text-lg">A</span>
           </div>
           <div>
-            <p className="text-slate-400 text-sm uppercase tracking-widest">AIO</p>
-            <h1 className="text-white text-xl font-semibold">Yönetim Paneli</h1>
+            <h1 className="font-bold text-xl tracking-tight text-white">AIO V2.0</h1>
+            <p className="text-xs text-slate-500 font-medium">Admin Console</p>
           </div>
         </div>
+        <button 
+          onClick={onClose}
+          className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
+        >
+          <X size={20} />
+        </button>
+      </div>
 
-        <nav className="flex flex-col gap-2">
-          {navigation.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 text-sm font-medium
-                ${isActive ? 'gradient-primary text-white shadow-lg shadow-electric-blue/30' : 'text-slate-300 hover:bg-white/5 hover-glow'}`
-              }
+      <nav className="flex-1 px-4 py-6 space-y-2">
+        {menuItems.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            onClick={() => window.innerWidth < 1024 && onClose()}
+            className={({ isActive }) => cn(
+              "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
+              isActive 
+                ? "bg-electric-blue/10 text-electric-blue border border-electric-blue/20 shadow-[0_0_20px_rgba(59,130,246,0.15)]" 
+                : "hover:bg-white/[0.03] hover:text-white text-slate-400"
+            )}
+          >
+            <item.icon size={20} className={cn("transition-transform group-hover:scale-110")} />
+            <span className="font-medium">{item.label}</span>
+          </NavLink>
+        ))}
+      </nav>
+
+      <div className="p-4 mt-auto">
+        <button className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all duration-200 group">
+          <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
+          <span className="font-medium">Logout</span>
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:block w-72 h-screen sticky top-0 glass-panel border-r border-white/[0.05] z-50">
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile Sidebar Overlay */}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={onClose}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+            />
+            <motion.aside
+              initial={{ x: -300 }}
+              animate={{ x: 0 }}
+              exit={{ x: -300 }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 left-0 w-72 glass-panel border-r border-white/[0.05] z-50 lg:hidden"
             >
-              <item.icon size={18} />
-              {item.name}
-            </NavLink>
-          ))}
-        </nav>
-      </div>
+              <SidebarContent />
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+    </>
+  );
+};
 
-      <div className="glass-card bg-white/5 border border-white/10 p-4 flex items-center gap-3">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-electric-blue to-neon-purple flex items-center justify-center text-white font-bold text-lg border border-white/20">
-          MT
-        </div>
-        <div>
-          <p className="text-white font-semibold">Mehmet Tutar</p>
-          <p className="text-sm text-slate-400">Kurucu</p>
-        </div>
-      </div>
-    </aside>
-  )
-}
+export default Sidebar;

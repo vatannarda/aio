@@ -1,37 +1,35 @@
-import type { InputHTMLAttributes } from 'react'
-import { forwardRef } from 'react'
+import React, { forwardRef } from 'react';
+import { cn } from '@/lib/utils';
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  label?: string
-  error?: string
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label?: string;
+  error?: string;
 }
 
-export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, className = '', ...props }, ref) => {
+const Input = forwardRef<HTMLInputElement, InputProps>(
+  ({ className, label, error, ...props }, ref) => {
     return (
-      <div className="flex flex-col gap-1.5">
+      <div className="space-y-1.5">
         {label && (
-          <label className="text-sm font-medium text-slate-300" htmlFor={props.id}>
+          <label className="text-sm font-medium text-slate-400 ml-1">
             {label}
           </label>
         )}
         <input
           ref={ref}
-          className={`
-            glass-card px-4 py-2.5 text-slate-200 placeholder:text-slate-500
-            focus:outline-none focus:ring-2 focus:ring-electric-blue/60 focus:ring-offset-2 focus:ring-offset-[#05060C]
-            focus:shadow-[0_0_30px_rgba(59,130,246,0.35)]
-            transition-all duration-300
-            disabled:opacity-50 disabled:cursor-not-allowed
-            ${error ? 'ring-2 ring-red-500/50' : ''}
-            ${className}
-          `}
+          className={cn(
+            "w-full px-4 py-3 rounded-xl glass-input outline-none",
+            error && "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/20",
+            className
+          )}
           {...props}
         />
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <p className="text-xs text-red-400 ml-1">{error}</p>}
       </div>
-    )
+    );
   }
-)
+);
 
-Input.displayName = 'Input'
+Input.displayName = "Input";
+
+export default Input;

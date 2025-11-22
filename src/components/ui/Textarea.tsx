@@ -1,33 +1,35 @@
-import type { TextareaHTMLAttributes } from 'react'
-import { forwardRef } from 'react'
+import React, { forwardRef } from 'react';
+import { cn } from '@/lib/utils';
 
-interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
-  label?: string
-  helperText?: string
+interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  label?: string;
+  error?: string;
 }
 
-export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ label, helperText, className = '', ...props }, ref) => {
+const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
+  ({ className, label, error, ...props }, ref) => {
     return (
-      <div className="flex flex-col gap-1.5 w-full">
+      <div className="space-y-1.5">
         {label && (
-          <label className="text-sm font-medium text-slate-300" htmlFor={props.id}>
+          <label className="text-sm font-medium text-slate-400 ml-1">
             {label}
           </label>
         )}
         <textarea
           ref={ref}
-          className={`glass-card px-4 py-3 text-slate-200 placeholder:text-slate-500 font-mono
-            focus:outline-none focus:ring-2 focus:ring-electric-blue/60 focus:ring-offset-2 focus:ring-offset-[#05060C]
-            focus:shadow-[0_0_30px_rgba(59,130,246,0.35)]
-            transition-all duration-300
-            ${className}`}
+          className={cn(
+            "w-full px-4 py-3 rounded-xl glass-input outline-none min-h-[120px] font-mono text-sm",
+            error && "border-red-500/50 focus:border-red-500/50 focus:ring-red-500/20",
+            className
+          )}
           {...props}
         />
-        {helperText && <p className="text-xs text-slate-400">{helperText}</p>}
+        {error && <p className="text-xs text-red-400 ml-1">{error}</p>}
       </div>
-    )
+    );
   }
-)
+);
 
-Textarea.displayName = 'Textarea'
+Textarea.displayName = "Textarea";
+
+export default Textarea;

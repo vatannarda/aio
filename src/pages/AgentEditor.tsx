@@ -1,147 +1,181 @@
-import { useState } from 'react'
-import toast from 'react-hot-toast'
-import { Layout } from '@/components/layout/Layout'
-import { Card } from '@/components/ui/Card'
-import { Select } from '@/components/ui/Select'
-import { Textarea } from '@/components/ui/Textarea'
-import { Slider } from '@/components/ui/Slider'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import type { AgentConfig } from '@/types'
-import { api } from '@/services/api'
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Save, Bot, Sparkles, Cpu } from 'lucide-react';
+import toast from 'react-hot-toast';
+import Input from '@/components/ui/Input';
+import Select from '@/components/ui/Select';
+import Textarea from '@/components/ui/Textarea';
+import Button from '@/components/ui/Button';
+import { agentService, type AgentConfig } from '@/services/api';
 
-const modelOptions = [
-  { value: 'gemini-pro', label: 'Gemini Pro' },
-  { value: 'gemini-flash', label: 'Gemini Flash' },
-  { value: 'gpt-4o', label: 'GPT-4o' },
-]
-
-const roleOptions = [
-  { value: 'sales', label: 'Satış Temsilcisi' },
-  { value: 'support', label: 'Teknik Destek' },
-  { value: 'general', label: 'Genel Asistan' },
-]
-
-const defaultSystemPrompt = `Sen AIO adında gelişmiş bir yapay zeka asistanısın.
-Görevin kullanıcılara profesyonel, dostça ve faydalı yanıtlar vermek.
-Her zaman saygılı, bilgili ve çözüm odaklı yaklaş.
-
-Özellikler:
-- Net ve anlaşılır Türkçe konuş
-- Teknik konularda detaylı açıklamalar yap
-- Gerektiğinde örnekler ver
-- Kullanıcıyı doğru yönlendir`
-
-export function AgentEditor() {
-  const [config, setConfig] = useState<AgentConfig>({
-    name: 'AIO Asistan',
-    roleType: 'general',
+const AgentEditor: React.FC = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState<AgentConfig>({
+    name: '',
+    role_type: 'general',
     model: 'gemini-pro',
-    systemPrompt: defaultSystemPrompt,
+    system_prompt: '',
     temperature: 0.7,
-  })
-  const [loading, setLoading] = useState(false)
+  });
 
-  async function handleSubmit() {
-    const sanitizedName = config.name.trim() || 'AIO Asistan'
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
 
     try {
-      setLoading(true)
-      await api.updateAgentConfig({
-        ...config,
-        name: sanitizedName,
-      })
-      setConfig((prev) => ({ ...prev, name: sanitizedName }))
-      toast.success('Ajan Beyni Güncellendi')
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Güncelleme başarısız'
-      toast.error(message)
+      await agentService.updateAgent(formData);
+      toast.success('Agent configuration saved successfully!', {
+        icon: '🚀',
+        style: {
+          background: '#1e293b',
+          color: '#fff',
+          border: '1px solid rgba(255,255,255,0.1)',
+        },
+      });
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to save configuration', {
+        style: {
+          background: '#1e293b',
+          color: '#ef4444',
+          border: '1px solid rgba(239,68,68,0.2)',
+        },
+      });
     } finally {
-      setLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
+
+  const handleChange = (field: keyof AgentConfig, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
   return (
-    <Layout
-      title="Ajan Beyni & Prompt Editörü"
-      description="AI modelinizin kişiliğini ve davranışını özelleştirin"
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="max-w-4xl mx-auto"
     >
-      <div className="max-w-4xl">
-        <Card title="Yapay Zeka Konfigürasyonu">
-          <div className="space-y-6">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-white tracking-tight mb-2 flex items-center gap-3">
+          <Bot className="text-electric-blue" size={32} />
+          Agent Configuration
+        </h1>
+        <p className="text-slate-400 text-lg">
+          Customize your AI agent's personality and behavioral parameters.
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column - Main Settings */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="glass-panel p-6 rounded-2xl space-y-6">
+            <div className="flex items-center gap-2 text-electric-blue mb-4">
+              <Sparkles size={20} />
+              <h3 className="font-semibold text-lg">Identity & Behavior</h3>
+            </div>
+            
+            <Input
+              label="Agent Name"
+              placeholder="e.g. Sarah Assistant"
+              value={formData.name}
+              onChange={(e) => handleChange('name', e.target.value)}
+              required
+            />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input
-                label="Ajan İsmi"
-                id="name"
-                value={config.name}
-                onChange={(e) => setConfig({ ...config, name: e.target.value })}
-                placeholder="Örn: AIO Asistan"
+              <Select
+                label="Role Type"
+                value={formData.role_type}
+                onChange={(e) => handleChange('role_type', e.target.value)}
+                options={[
+                  { value: 'sales', label: 'Sales Representative' },
+                  { value: 'support', label: 'Customer Support' },
+                  { value: 'general', label: 'General Assistant' },
+                ]}
               />
 
               <Select
-                label="Ajan Rolü"
-                id="roleType"
-                options={roleOptions}
-                value={config.roleType}
-                onChange={(e) => setConfig({ ...config, roleType: e.target.value as AgentConfig['roleType'] })}
+                label="Model"
+                value={formData.model}
+                onChange={(e) => handleChange('model', e.target.value)}
+                options={[
+                  { value: 'gemini-pro', label: 'Gemini Pro' },
+                  { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
+                ]}
               />
-            </div>
-
-            <Select
-              label="AI Modeli"
-              id="model"
-              options={modelOptions}
-              value={config.model}
-              onChange={(e) => setConfig({ ...config, model: e.target.value as AgentConfig['model'] })}
-            />
-
-            <Textarea
-              label="Sistem Promptu"
-              id="systemPrompt"
-              value={config.systemPrompt}
-              onChange={(e) => setConfig({ ...config, systemPrompt: e.target.value })}
-              rows={16}
-              className="min-h-[400px]"
-              helperText="Bu prompt AI'ın temel davranışını ve kişiliğini belirler. Detaylı ve net olun."
-            />
-
-            <div className="glass-card bg-white/[0.02] p-6">
-              <Slider
-                label="Sıcaklık (Temperature)"
-                valueLabel={config.temperature.toFixed(2)}
-                min={0}
-                max={1}
-                step={0.01}
-                value={config.temperature}
-                onChange={(e) => setConfig({ ...config, temperature: parseFloat(e.target.value) })}
-              />
-              <p className="text-xs text-slate-500 mt-3">
-                Düşük değerler (0.1-0.3) daha tutarlı ve öngörülebilir yanıtlar üretir.
-                Yüksek değerler (0.7-1.0) daha yaratıcı ve çeşitli yanıtlar sağlar.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button onClick={() => void handleSubmit()} loading={loading} size="lg">
-                Kaydet
-              </Button>
-              <Button
-                variant="secondary"
-                size="lg"
-                onClick={() => setConfig({
-                  name: 'AIO Asistan',
-                  roleType: 'general',
-                  model: 'gemini-pro',
-                  systemPrompt: defaultSystemPrompt,
-                  temperature: 0.7,
-                })}
-              >
-                Varsayılana Sıfırla
-              </Button>
             </div>
           </div>
-        </Card>
-      </div>
-    </Layout>
-  )
-}
+
+          <div className="glass-panel p-6 rounded-2xl flex flex-col h-[500px]">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2 text-neon-purple">
+                <Cpu size={20} />
+                <h3 className="font-semibold text-lg">System Prompt</h3>
+              </div>
+              <span className="text-xs text-slate-500 uppercase tracking-wider font-medium">System Instructions</span>
+            </div>
+            
+            <div className="relative flex-1 group">
+              <div className="absolute inset-0 bg-black/50 rounded-xl pointer-events-none border border-white/10" />
+              <Textarea
+                value={formData.system_prompt}
+                onChange={(e) => handleChange('system_prompt', e.target.value)}
+                placeholder="// Define the agent's core instructions, constraints, and personality here..."
+                className="h-full resize-none font-mono text-sm leading-relaxed bg-black/80 text-green-400 border-none focus:ring-0 p-4"
+                spellCheck={false}
+                required
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column - Parameters & Save */}
+        <div className="space-y-6">
+          <div className="glass-panel p-6 rounded-2xl">
+            <h3 className="font-semibold text-white mb-6">Parameters</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between mb-2">
+                  <label className="text-sm font-medium text-slate-400">Temperature</label>
+                  <span className="text-sm font-mono text-electric-blue">{formData.temperature}</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={formData.temperature}
+                  onChange={(e) => handleChange('temperature', parseFloat(e.target.value))}
+                  className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-electric-blue hover:accent-electric-blue/80"
+                />
+                <div className="flex justify-between text-xs text-slate-500 mt-1">
+                  <span>Precise</span>
+                  <span>Creative</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            className="w-full"
+            isLoading={isLoading}
+          >
+            <Save size={20} className="mr-2" />
+            Save Configuration
+          </Button>
+
+          <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-200 text-xs leading-relaxed">
+            <p className="font-semibold mb-1">Pro Tip:</p>
+            For best results with Gemini models, use clear, structured instructions in the system prompt using Markdown formatting.
+          </div>
+        </div>
+      </form>
+    </motion.div>
+  );
+};
+
+export default AgentEditor;

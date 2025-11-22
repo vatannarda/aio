@@ -1,50 +1,41 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { Toaster } from 'react-hot-toast'
-import { Landing } from './pages/Landing'
-import { Inbox } from './pages/Inbox'
-import { AgentEditor } from './pages/AgentEditor'
-import { WidgetConfig } from './pages/WidgetConfig'
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import MainLayout from '@/layouts/MainLayout';
+import Landing from '@/pages/Landing';
+import AgentEditor from '@/pages/AgentEditor';
 
-function App() {
+const Placeholder = ({ title }: { title: string }) => (
+  <div className="flex flex-col items-center justify-center h-[60vh] text-slate-500">
+    <h2 className="text-2xl font-bold text-slate-300 mb-2">{title}</h2>
+    <p>This module is currently under development.</p>
+  </div>
+);
+
+const App: React.FC = () => {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/admin" element={<Navigate to="/admin/inbox" replace />} />
-        <Route path="/admin/inbox" element={<Inbox />} />
-        <Route path="/admin/agent-editor" element={<AgentEditor />} />
-        <Route path="/admin/widget-config" element={<WidgetConfig />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-
-      <Toaster
+    <>
+      <Toaster 
         position="top-right"
         toastOptions={{
           duration: 4000,
           style: {
-            background: 'rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(12px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            color: '#e2e8f0',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
-            borderRadius: '12px',
-          },
-          success: {
-            iconTheme: {
-              primary: '#10b981',
-              secondary: 'white',
-            },
-          },
-          error: {
-            iconTheme: {
-              primary: '#ef4444',
-              secondary: 'white',
-            },
+            background: '#0B0F19',
+            color: '#fff',
+            border: '1px solid rgba(255,255,255,0.1)',
           },
         }}
       />
-    </BrowserRouter>
-  )
-}
+      <Routes>
+        <Route path="/" element={<MainLayout />}>
+          <Route index element={<Landing />} />
+          <Route path="agent-editor" element={<AgentEditor />} />
+          <Route path="inbox" element={<Placeholder title="Inbox" />} />
+          <Route path="settings" element={<Placeholder title="Settings" />} />
+        </Route>
+      </Routes>
+    </>
+  );
+};
 
-export default App
+export default App;
