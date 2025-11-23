@@ -11,13 +11,9 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const menuItems = [
-    // Prompt asked for "Ajan Beyni (Agent Editor)" - matching existing "AgentEditor" page
-    // and "Canlı Chatbot" which is on landing page/widget.
-    // I will add generic links for now fitting a SaaS panel.
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
     { icon: Bot, label: 'Agent Editor', path: '/agent-editor' },
-    { icon: MessageSquare, label: 'Inbox', path: '/inbox' },
-    { icon: Settings, label: 'Settings', path: '/settings' },
+    { icon: Settings, label: 'Widget Config', path: '/widget-config' },
   ];
 
   const SidebarContent = () => (

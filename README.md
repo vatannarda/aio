@@ -1,83 +1,85 @@
-# AIO Admin Dashboard
+# AIO V2.0 - Admin Console & Customer Panel
 
-AIO ekibi için hazırlanmış, "Deep Space" temalı modern yönetim paneli ve ziyaretçileri karşılayan landing sayfası. Proje; React 19, Vite, TypeScript ve Tailwind CSS ile geliştirilmiştir.
+Production-ready Admin and Customer dashboard for AIO Systems, featuring "Deep Space Premium" design language.
 
-## 🚀 Özellikler
+## 🚀 Quick Start
 
-- ✨ **Landing Page & Chatbot**: `/` rotasında yer alan karşılama ekranı, sağ alttaki canlı chatbot ile Gemini destekli sohbet deneyimi sunar. Sohbet geçmişi tarayıcıda saklanır.
-- 📊 **Dashboard & Gelen Kutusu** (`/admin/inbox`): Gerçek zamanlı metrikler, skeleton yükleyiciler ve canlı sohbet log tablosu.
-- 🧠 **Ajan Beyni Editörü** (`/admin/agent-editor`): Model seçimi, sistem promptu ve sıcaklık ayarları.
-- 💬 **Widget Konfigüratörü** (`/admin/widget-config`): Chat widget renkleri, mesajları ve logoları için canlı önizleme.
-- ⚙️ **Tek API Servisi**: Tüm istekler `src/services/api.ts` üzerinden yönetilir, hata durumlarında kullanıcı nazikçe bilgilendirilir.
+### Prerequisites
+- Node.js 18+
+- npm 9+
 
-## 🎨 Tasarım
+### Local Development
 
-- **Tema**: Deep Space (Slate-950 arka plan, cam efekti kartlar)
-- **Renkler**: Electric Blue (#3b82f6), Neon Purple (#8b5cf6), Slate-200/300 metinler
-- **Tipografi**: Inter
-- **Özel Utility'ler**: `glass-card`, `glass-header`, `gradient-primary`, `hover-glow`, `skeleton*` sınıfları
+1. **Clone & Setup**
+   ```bash
+   git clone <repo>
+   cd aio
+   cp .env.example .env
+   # Edit .env with your webhook URL (optional, defaults provided)
+   npm install
+   ```
 
-## 📂 Proje Yapısı
+2. **Run Development Server**
+   ```bash
+   npm run dev
+   # Open http://localhost:5173
+   ```
+
+### Production Deployment
+
+1. **Build & Start**
+   ```bash
+   npm install --production=false
+   npm run build
+   npm start
+   ```
+   This will build the project and start a production preview server on port 5173.
+
+2. **Persistent Execution (PM2)**
+   To keep the application running in the background:
+   ```bash
+   npm install -g pm2
+   pm2 start "npm start" --name "aio"
+   pm2 save
+   pm2 startup
+   ```
+
+3. **Nginx Reverse Proxy (Optional)**
+   For serving on port 80/443 with a domain:
+   
+   Copy the example config:
+   ```bash
+   cp nginx.conf.example /etc/nginx/sites-available/aio
+   ln -s /etc/nginx/sites-available/aio /etc/nginx/sites-enabled/
+   nginx -t
+   systemctl reload nginx
+   ```
+
+## 📂 Project Structure
 
 ```
 src/
 ├── components/
-│   ├── Chatbot.tsx          # Landing sayfasındaki chatbot widget'ı
-│   ├── layout/              # Layout, Sidebar, Header
-│   └── ui/                  # Button, Card, Input, Skeleton vb.
-├── pages/
-│   ├── Landing.tsx          # Ana sayfa
-│   ├── Inbox.tsx            # Dashboard & gelen kutusu
-│   ├── AgentEditor.tsx      # AI konfigürasyonu
-│   └── WidgetConfig.tsx     # Chat widget ayarları
-├── services/api.ts          # Tüm API çağrıları
-├── types/                   # Tip tanımları
-├── utils/format.ts          # Yardımcı fonksiyonlar
-├── App.tsx                  # Router tanımları
-└── main.tsx / index.css     # Entry ve global stiller
+│   ├── features/     # Complex business components (ChatWidget, StatCard)
+│   ├── layout/       # Layout wrappers (AdminLayout, CustomerLayout)
+│   └── ui/           # Atomic UI components (Button, Input, Slider)
+├── hooks/            # Custom hooks (useChat)
+├── pages/            # Page views
+├── services/         # API integration
+├── types/            # TypeScript definitions
+└── lib/              # Utilities
 ```
 
-## 🛠️ Kurulum
+## 🎨 Design System
 
-```bash
-npm install        # Bağımlılıkları kur
-npm run dev        # Geliştirme sunucusu
-npm run build      # Production build
-npm run preview    # Build önizleme
-```
+**Theme:** Deep Space Premium
+- **Background:** #050505
+- **Primary:** Electric Blue (#3b82f6)
+- **Accent:** Neon Purple (#8b5cf6)
+- **Glassmorphism:** Heavy use of `backdrop-blur-2xl` and `bg-white/[0.02]`
 
-## 🌐 Deploy Ayarları
+## 🔗 API Integration
 
-- **Vite Base Path**: `/`
-- **Router**: `/` (Landing) ve `/admin/*` (panel)
-- **Build**: Tek paket içinde landing + admin
-
-## 🔗 API Entegrasyonu
-
-```env
-VITE_N8N_WEBHOOK_URL=https://n8n.aio.web.tr/webhook/admin
-```
-
-| Amaç | Metot & Endpoint |
-| --- | --- |
-| Dashboard istatistikleri | `GET ${VITE_N8N_WEBHOOK_URL}/stats` |
-| Chat logları | `GET ${VITE_N8N_WEBHOOK_URL}/get-logs` |
-| Ajan güncelleme | `POST ${VITE_N8N_WEBHOOK_URL}/update-prompt` |
-| Widget güncelleme | `POST ${VITE_N8N_WEBHOOK_URL}/update-widget` |
-| Landing chatbot | `POST https://n8n.aio.web.tr/webhook/chat` (Body: `{ "message": "..." }` ) |
-
-Başarısız isteklerde `react-hot-toast` ile kullanıcı bilgilendirilir.
-
-## 📱 Responsive & UX Notları
-
-- Tüm bileşenler mobil uyumlu grid yapısını kullanır.
-- Stat kartları ve tablolarda skeleton yükleyiciler bulunur.
-- Butonlar hover'da glow/scale efekti ve odak durumlarında mavi ring gösterir.
-- Chatbot popup'ı typing indicator, localStorage kalıcılığı ve temizleme fonksiyonuna sahiptir.
-
-## 🔐 Güvenlik
-
-- API URL'leri `.env` dosyasında tutulur ve `.gitignore` ile korunur.
-- TypeScript strict modu ve reusable komponent mimarisi ile güvenilir kod yapısı.
-
-Proje AIO ekibine özel olarak hazırlanmıştır.
+The application connects to n8n webhooks defined in `.env`:
+- **Agent Config:** POST `/update-agent`
+- **Chat:** POST `/chat`

@@ -5,8 +5,10 @@ import toast from 'react-hot-toast';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import Textarea from '@/components/ui/Textarea';
+import Slider from '@/components/ui/Slider';
 import Button from '@/components/ui/Button';
-import { agentService, type AgentConfig } from '@/services/api';
+import { agentService } from '@/services/api';
+import { AgentConfig } from '@/types';
 
 const AgentEditor: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -100,7 +102,7 @@ const AgentEditor: React.FC = () => {
                 onChange={(e) => handleChange('model', e.target.value)}
                 options={[
                   { value: 'gemini-pro', label: 'Gemini Pro' },
-                  { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
+                  { value: 'gemini-flash', label: 'Gemini Flash' },
                 ]}
               />
             </div>
@@ -135,24 +137,17 @@ const AgentEditor: React.FC = () => {
             <h3 className="font-semibold text-white mb-6">Parameters</h3>
             
             <div className="space-y-4">
-              <div>
-                <div className="flex justify-between mb-2">
-                  <label className="text-sm font-medium text-slate-400">Temperature</label>
-                  <span className="text-sm font-mono text-electric-blue">{formData.temperature}</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value={formData.temperature}
-                  onChange={(e) => handleChange('temperature', parseFloat(e.target.value))}
-                  className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-electric-blue hover:accent-electric-blue/80"
-                />
-                <div className="flex justify-between text-xs text-slate-500 mt-1">
-                  <span>Precise</span>
-                  <span>Creative</span>
-                </div>
+              <Slider
+                label="Temperature"
+                value={formData.temperature}
+                min={0}
+                max={1}
+                step={0.1}
+                onChange={(e) => handleChange('temperature', parseFloat(e.target.value))}
+              />
+              <div className="flex justify-between text-xs text-slate-500 mt-1">
+                <span>Precise</span>
+                <span>Creative</span>
               </div>
             </div>
           </div>

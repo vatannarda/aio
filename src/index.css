@@ -9,18 +9,13 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-  }
-
   body {
-    @apply bg-background text-slate-400 antialiased selection:bg-electric-blue/30 selection:text-white;
+    @apply bg-deep-space text-slate-400 antialiased selection:bg-electric-blue/30 selection:text-white;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-@layer utilities {
+@layer components {
   .glass-panel {
     @apply bg-white/[0.02] backdrop-blur-2xl border border-white/[0.05] shadow-2xl;
   }
@@ -28,7 +23,9 @@
   .glass-input {
     @apply bg-white/[0.03] border border-white/[0.08] focus:border-electric-blue/50 focus:ring-1 focus:ring-electric-blue/50 transition-all duration-300 placeholder:text-slate-600 text-slate-200;
   }
+}
 
+@layer utilities {
   .text-glow {
     text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
   }
@@ -41,4 +38,23 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
