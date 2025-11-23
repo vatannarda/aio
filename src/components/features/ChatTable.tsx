@@ -9,8 +9,8 @@ const ChatTable: React.FC<ChatTableProps> = ({ logs }) => {
   return (
     <div className="glass-panel rounded-2xl overflow-hidden border border-white/5">
        <div className="p-6 border-b border-white/5 flex items-center justify-between">
-          <h3 className="font-semibold text-white text-lg">Recent Conversations</h3>
-          <button className="text-xs text-electric-blue hover:text-white transition-colors">View All</button>
+          <h3 className="font-semibold text-white text-lg">Son Konuşmalar</h3>
+          <button className="text-xs text-electric-blue hover:text-white transition-colors">Tümünü Gör</button>
        </div>
        
        <div className="overflow-x-auto">
@@ -18,10 +18,10 @@ const ChatTable: React.FC<ChatTableProps> = ({ logs }) => {
            <thead className="bg-white/[0.02] text-slate-400 font-medium">
              <tr>
                <th className="px-6 py-4">Platform</th>
-               <th className="px-6 py-4">User ID</th>
-               <th className="px-6 py-4">Message Preview</th>
-               <th className="px-6 py-4">Response</th>
-               <th className="px-6 py-4">Date</th>
+               <th className="px-6 py-4">Kullanıcı ID</th>
+               <th className="px-6 py-4">Mesaj Önizleme</th>
+               <th className="px-6 py-4">Yanıt</th>
+               <th className="px-6 py-4">Tarih</th>
              </tr>
            </thead>
            <tbody className="divide-y divide-white/5">

@@ -8,16 +8,16 @@ import { ChatLog } from '@/types';
 const AdminDashboard: React.FC = () => {
   // Mock Data
   const stats = [
-    { title: 'Total Conversations', value: '1,250', icon: MessageSquare, trend: '12%', trendUp: true, color: 'text-electric-blue' },
-    { title: 'Active Users', value: '340', icon: Users, trend: '5%', trendUp: true, color: 'text-neon-purple' },
-    { title: 'Avg Response Time', value: '2.3s', icon: Zap, trend: '0.4s', trendUp: false, color: 'text-emerald-400' },
+    { title: 'Toplam Konuşma', value: '1,250', icon: MessageSquare, trend: '12%', trendUp: true, color: 'text-electric-blue' },
+    { title: 'Aktif Kullanıcı', value: '340', icon: Users, trend: '5%', trendUp: true, color: 'text-neon-purple' },
+    { title: 'Ort. Yanıt Süresi', value: '2.3s', icon: Zap, trend: '0.4s', trendUp: false, color: 'text-emerald-400' },
   ];
 
   const logs: ChatLog[] = [
-    { id: '1', platform: 'Web Widget', userId: 'usr_8293', messagePreview: 'How do I reset my password?', responsePreview: 'You can reset it by...', timestamp: '2 min ago' },
-    { id: '2', platform: 'Mobile App', userId: 'usr_1120', messagePreview: 'Pricing plans inquiry', responsePreview: 'We have three tiers...', timestamp: '15 min ago' },
-    { id: '3', platform: 'Web Widget', userId: 'usr_3321', messagePreview: 'Integration with Slack?', responsePreview: 'Yes, we support Slack...', timestamp: '1 hour ago' },
-    { id: '4', platform: 'API', userId: 'sys_9982', messagePreview: 'System health check', responsePreview: 'All systems operational', timestamp: '2 hours ago' },
+    { id: '1', platform: 'Web Widget', userId: 'usr_8293', messagePreview: 'Şifremi nasıl sıfırlarım?', responsePreview: 'Şunu yaparak sıfırlayabilirsiniz...', timestamp: '2 dk önce' },
+    { id: '2', platform: 'Mobil Uygulama', userId: 'usr_1120', messagePreview: 'Fiyatlandırma planı sorgusu', responsePreview: 'Üç aşamamız var...', timestamp: '15 dk önce' },
+    { id: '3', platform: 'Web Widget', userId: 'usr_3321', messagePreview: 'Slack entegrasyonu?', responsePreview: 'Evet, Slack\'i destekliyoruz...', timestamp: '1 saat önce' },
+    { id: '4', platform: 'API', userId: 'sys_9982', messagePreview: 'Sistem sağlık kontrolü', responsePreview: 'Tüm sistemler çalışıyor', timestamp: '2 saat önce' },
   ];
 
   return (
@@ -28,12 +28,12 @@ const AdminDashboard: React.FC = () => {
     >
       <div className="flex items-center justify-between">
          <div>
-            <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Dashboard Overview</h1>
-            <p className="text-slate-400">Welcome back, here's what's happening with your agents today.</p>
+            <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Panel Genel Bakış</h1>
+            <p className="text-slate-400">Tekrar hoş geldiniz, ajanlarınızın bugünkü durumu burada.</p>
          </div>
          <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-white/5">
             <Activity size={16} className="text-emerald-400" />
-            <span className="text-sm text-slate-300">Real-time Data</span>
+            <span className="text-sm text-slate-300">Gerçek Zamanlı Veri</span>
          </div>
       </div>
 

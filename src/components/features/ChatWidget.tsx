@@ -81,7 +81,14 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 100, scale: 0.95 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed z-50 md:bottom-6 md:right-6 w-full h-full md:w-[380px] md:h-[600px] md:rounded-2xl bg-[#0B0F19] border border-white/10 shadow-2xl flex flex-col overflow-hidden inset-0 md:inset-auto"
+              className={cn(
+                "fixed z-[60] flex flex-col bg-[#0B0F19] border border-white/10 shadow-2xl overflow-hidden",
+                "transition-all duration-300 ease-in-out",
+                // MOBİL: Tam Ekran
+                "inset-0 w-full h-[100dvh] rounded-none",
+                // MASAÜSTÜ: Sağ Alt Köşe
+                "md:inset-auto md:bottom-6 md:right-6 md:w-[380px] md:h-[600px] md:rounded-2xl"
+              )}
             >
               {/* Header */}
               <div className="p-4 bg-gradient-to-r from-electric-blue/20 to-neon-purple/20 border-b border-white/5 flex items-center justify-between backdrop-blur-md">
@@ -92,10 +99,10 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
                     </div>
                   </div>
                   <div>
-                    <h3 className="font-bold text-white text-sm">AIO Assistant</h3>
+                    <h3 className="font-bold text-white text-sm">AIO Asistan</h3>
                     <div className="flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-xs text-emerald-400 font-medium">Online</span>
+                      <span className="text-xs text-emerald-400 font-medium">Çevrimiçi</span>
                     </div>
                   </div>
                 </div>
@@ -112,7 +119,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
                 {messages.length === 0 && (
                     <div className="text-center text-slate-500 text-sm mt-10">
                         <Bot className="mx-auto mb-2 opacity-50" size={32} />
-                        <p>Hello! How can I help you today?</p>
+                        <p>Merhaba! Size nasıl yardımcı olabilirim?</p>
                     </div>
                 )}
                 {messages.map((msg) => (
@@ -167,7 +174,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    placeholder="Type a message..."
+                    placeholder="Mesajınızı yazın..."
                     className="flex-1 bg-white/[0.03] border border-white/[0.1] rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-electric-blue/50 focus:ring-1 focus:ring-electric-blue/50 outline-none transition-all"
                   />
                   <Button

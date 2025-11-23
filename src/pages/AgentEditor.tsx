@@ -26,7 +26,7 @@ const AgentEditor: React.FC = () => {
 
     try {
       await agentService.updateAgent(formData);
-      toast.success('Agent configuration saved successfully!', {
+      toast.success('Ajan yapılandırması başarıyla kaydedildi!', {
         icon: '🚀',
         style: {
           background: '#1e293b',
@@ -35,7 +35,7 @@ const AgentEditor: React.FC = () => {
         },
       });
     } catch (error: any) {
-      toast.error(error.message || 'Failed to save configuration', {
+      toast.error(error.message || 'Yapılandırma kaydedilemedi', {
         style: {
           background: '#1e293b',
           color: '#ef4444',
@@ -60,10 +60,10 @@ const AgentEditor: React.FC = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white tracking-tight mb-2 flex items-center gap-3">
           <Bot className="text-electric-blue" size={32} />
-          Agent Configuration
+          Ajan Yapılandırması
         </h1>
         <p className="text-slate-400 text-lg">
-          Customize your AI agent's personality and behavioral parameters.
+          Yapay zeka ajanınızın kişiliğini ve davranış parametrelerini özelleştirin.
         </p>
       </div>
 
@@ -73,12 +73,12 @@ const AgentEditor: React.FC = () => {
           <div className="glass-panel p-6 rounded-2xl space-y-6">
             <div className="flex items-center gap-2 text-electric-blue mb-4">
               <Sparkles size={20} />
-              <h3 className="font-semibold text-lg">Identity & Behavior</h3>
+              <h3 className="font-semibold text-lg">Kimlik ve Davranış</h3>
             </div>
             
             <Input
-              label="Agent Name"
-              placeholder="e.g. Sarah Assistant"
+              label="Ajan Adı"
+              placeholder="örn. Asistan Selin"
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
               required
@@ -86,13 +86,13 @@ const AgentEditor: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Select
-                label="Role Type"
+                label="Rol Tipi"
                 value={formData.role_type}
                 onChange={(e) => handleChange('role_type', e.target.value)}
                 options={[
-                  { value: 'sales', label: 'Sales Representative' },
-                  { value: 'support', label: 'Customer Support' },
-                  { value: 'general', label: 'General Assistant' },
+                  { value: 'sales', label: 'Satış Temsilcisi' },
+                  { value: 'support', label: 'Müşteri Desteği' },
+                  { value: 'general', label: 'Genel Asistan' },
                 ]}
               />
 
@@ -112,9 +112,9 @@ const AgentEditor: React.FC = () => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2 text-neon-purple">
                 <Cpu size={20} />
-                <h3 className="font-semibold text-lg">System Prompt</h3>
+                <h3 className="font-semibold text-lg">Sistem İstemi</h3>
               </div>
-              <span className="text-xs text-slate-500 uppercase tracking-wider font-medium">System Instructions</span>
+              <span className="text-xs text-slate-500 uppercase tracking-wider font-medium">Sistem Talimatları</span>
             </div>
             
             <div className="relative flex-1 group">
@@ -122,7 +122,7 @@ const AgentEditor: React.FC = () => {
               <Textarea
                 value={formData.system_prompt}
                 onChange={(e) => handleChange('system_prompt', e.target.value)}
-                placeholder="// Define the agent's core instructions, constraints, and personality here..."
+                placeholder="// Ajanın temel talimatlarını, kısıtlamalarını ve kişiliğini buraya tanımlayın..."
                 className="h-full resize-none font-mono text-sm leading-relaxed bg-black/80 text-green-400 border-none focus:ring-0 p-4"
                 spellCheck={false}
                 required
@@ -134,11 +134,11 @@ const AgentEditor: React.FC = () => {
         {/* Right Column - Parameters & Save */}
         <div className="space-y-6">
           <div className="glass-panel p-6 rounded-2xl">
-            <h3 className="font-semibold text-white mb-6">Parameters</h3>
+            <h3 className="font-semibold text-white mb-6">Parametreler</h3>
             
             <div className="space-y-4">
               <Slider
-                label="Temperature"
+                label="Sıcaklık (Yaratıcılık)"
                 value={formData.temperature}
                 min={0}
                 max={1}
@@ -146,8 +146,8 @@ const AgentEditor: React.FC = () => {
                 onChange={(e) => handleChange('temperature', parseFloat(e.target.value))}
               />
               <div className="flex justify-between text-xs text-slate-500 mt-1">
-                <span>Precise</span>
-                <span>Creative</span>
+                <span>Hassas</span>
+                <span>Yaratıcı</span>
               </div>
             </div>
           </div>
@@ -160,12 +160,12 @@ const AgentEditor: React.FC = () => {
             isLoading={isLoading}
           >
             <Save size={20} className="mr-2" />
-            Save Configuration
+            Yapılandırmayı Kaydet
           </Button>
 
           <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-200 text-xs leading-relaxed">
-            <p className="font-semibold mb-1">Pro Tip:</p>
-            For best results with Gemini models, use clear, structured instructions in the system prompt using Markdown formatting.
+            <p className="font-semibold mb-1">İpucu:</p>
+            Gemini modelleriyle en iyi sonuçları almak için, sistem isteminde Markdown formatı kullanarak net ve yapılandırılmış talimatlar verin.
           </div>
         </div>
       </form>

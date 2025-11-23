@@ -11,9 +11,9 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const menuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-    { icon: Bot, label: 'Agent Editor', path: '/agent-editor' },
-    { icon: Settings, label: 'Widget Config', path: '/widget-config' },
+    { icon: LayoutDashboard, label: 'Panel', path: '/admin' },
+    { icon: Bot, label: 'Ajan Beyni', path: '/admin/agent-editor' },
+    { icon: Settings, label: 'Chatbot Ayarları', path: '/admin/widget-config' },
   ];
 
   const SidebarContent = () => (
@@ -25,7 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </div>
           <div>
             <h1 className="font-bold text-xl tracking-tight text-white">AIO V2.0</h1>
-            <p className="text-xs text-slate-500 font-medium">Admin Console</p>
+            <p className="text-xs text-slate-500 font-medium">Yönetim Paneli</p>
           </div>
         </div>
         <button 
@@ -41,6 +41,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           <NavLink
             key={item.path}
             to={item.path}
+            end={item.path === '/admin'} // Add 'end' for exact match on root path
             onClick={() => window.innerWidth < 1024 && onClose()}
             className={({ isActive }) => cn(
               "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
@@ -58,7 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       <div className="p-4 mt-auto">
         <button className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all duration-200 group">
           <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
-          <span className="font-medium">Logout</span>
+          <span className="font-medium">Çıkış</span>
         </button>
       </div>
     </div>
