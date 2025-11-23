@@ -1,30 +1,28 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, X, Send, Loader2, Bot, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { chatService } from '@/services/api';
 import Button from '@/components/ui/Button';
+import { useChat } from '@/hooks/useChat';
+import TypingIndicator from './TypingIndicator';
 
-interface Message {
-  id: string;
-  text: string;
-  sender: 'user' | 'bot';
-  timestamp: Date;
+interface ChatWidgetProps {
+  isOpen?: boolean;
+  onToggle?: () => void;
+  storageKey?: string;
 }
 
-const ChatWidget: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: 'Hello! How can I assist you today?',
-      sender: 'bot',
-      timestamp: new Date(),
-    },
-  ]);
+const ChatWidget: React.FC<ChatWidgetProps> = ({ 
+  isOpen: externalIsOpen, 
+  onToggle: externalOnToggle,
+  storageKey = 'aio-widget-history'
+}) => {
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  const toggle = externalOnToggle || (() => setInternalIsOpen(!internalIsOpen));
   
+  const [input, setInput] = useState('');
+  const { messages, isLoading, sendMessage } = useChat(storageKey);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -32,62 +30,38 @@ const ChatWidget: React.FC = () => {
   };
 
   useEffect(() => {
-    scrollToBottom();
+    if (isOpen) {
+        scrollToBottom();
+    }
   }, [messages, isOpen]);
 
   const handleSend = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!input.trim() || isLoading) return;
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      text: input,
-      sender: 'user',
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setInput('');
-    setIsLoading(true);
-
-    try {
-      const reply = await chatService.sendMessage(userMessage.text);
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: reply,
-        sender: 'bot',
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, botMessage]);
-    } catch (error) {
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: 'Sorry, I encountered an error. Please try again.',
-        sender: 'bot',
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-    }
+    
+    const msg = input;
+    setInput(''); // Clear immediately
+    await sendMessage(msg);
   };
 
   return (
     <>
-      {/* Toggle Button */}
-      <motion.button
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() => setIsOpen(true)}
-        className={cn(
-          "fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-r from-electric-blue to-neon-purple text-white shadow-[0_0_30px_rgba(59,130,246,0.4)] flex items-center justify-center hover:shadow-[0_0_50px_rgba(139,92,246,0.5)] transition-shadow",
-          isOpen && "hidden"
-        )}
-      >
-        <MessageSquare size={28} fill="currentColor" />
-      </motion.button>
+      {/* Toggle Button - Only show if not externally controlled or if we are using internal state */}
+      {externalIsOpen === undefined && (
+        <motion.button
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={toggle}
+            className={cn(
+            "fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-electric-blue to-neon-purple text-white shadow-[0_0_30px_rgba(59,130,246,0.4)] flex items-center justify-center hover:shadow-[0_0_50px_rgba(139,92,246,0.5)] transition-shadow",
+            isOpen && "hidden"
+            )}
+        >
+            <MessageSquare size={28} fill="currentColor" />
+        </motion.button>
+      )}
 
       {/* Chat Interface */}
       <AnimatePresence>
@@ -98,7 +72,7 @@ const ChatWidget: React.FC = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setIsOpen(false)}
+              onClick={() => toggle()}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
             />
             
@@ -126,7 +100,7 @@ const ChatWidget: React.FC = () => {
                   </div>
                 </div>
                 <button 
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => toggle()}
                   className="p-2 hover:bg-white/10 rounded-full text-slate-400 hover:text-white transition-colors"
                 >
                   <X size={20} />
@@ -135,6 +109,12 @@ const ChatWidget: React.FC = () => {
 
               {/* Messages Area */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#0B0F19]">
+                {messages.length === 0 && (
+                    <div className="text-center text-slate-500 text-sm mt-10">
+                        <Bot className="mx-auto mb-2 opacity-50" size={32} />
+                        <p>Hello! How can I help you today?</p>
+                    </div>
+                )}
                 {messages.map((msg) => (
                   <motion.div
                     key={msg.id}
@@ -142,24 +122,24 @@ const ChatWidget: React.FC = () => {
                     animate={{ opacity: 1, y: 0 }}
                     className={cn(
                       "flex gap-3 max-w-[85%]",
-                      msg.sender === 'user' ? "ml-auto flex-row-reverse" : ""
+                      msg.role === 'user' ? "ml-auto flex-row-reverse" : ""
                     )}
                   >
                     <div className={cn(
                       "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1",
-                      msg.sender === 'user' ? "bg-electric-blue/20 text-electric-blue" : "bg-neon-purple/20 text-neon-purple"
+                      msg.role === 'user' ? "bg-electric-blue/20 text-electric-blue" : "bg-neon-purple/20 text-neon-purple"
                     )}>
-                      {msg.sender === 'user' ? <User size={14} /> : <Bot size={14} />}
+                      {msg.role === 'user' ? <User size={14} /> : <Bot size={14} />}
                     </div>
                     <div className={cn(
                       "p-3 rounded-2xl text-sm leading-relaxed",
-                      msg.sender === 'user' 
+                      msg.role === 'user' 
                         ? "bg-electric-blue text-white rounded-tr-none" 
                         : "bg-white/[0.05] text-slate-200 border border-white/[0.05] rounded-tl-none"
                     )}>
-                      {msg.text}
+                      {msg.content}
                       <div className="mt-1 text-[10px] opacity-50 text-right">
-                        {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </div>
                   </motion.div>
@@ -174,13 +154,7 @@ const ChatWidget: React.FC = () => {
                     <div className="w-8 h-8 rounded-full bg-neon-purple/20 text-neon-purple flex items-center justify-center flex-shrink-0">
                        <Bot size={14} />
                     </div>
-                    <div className="bg-white/[0.05] p-3 rounded-2xl rounded-tl-none border border-white/[0.05]">
-                      <div className="flex gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:-0.3s]" />
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:-0.15s]" />
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" />
-                      </div>
-                    </div>
+                    <TypingIndicator />
                   </motion.div>
                 )}
                 <div ref={messagesEndRef} />

@@ -7,13 +7,18 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#050505', // Deep Space Black
+        'deep-space': '#050505',
         'electric-blue': '#3b82f6',
         'neon-purple': '#8b5cf6',
       },
-      backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+      backgroundColor: {
+        'glass': 'rgba(255, 255, 255, 0.02)',
+      },
+      backdropBlur: {
+        'glass': '20px',
+      },
+      borderColor: {
+        'glass': 'rgba(255, 255, 255, 0.05)',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
