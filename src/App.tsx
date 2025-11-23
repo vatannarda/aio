@@ -1,12 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import AdminLayout from '@/components/layout/AdminLayout';
-import CustomerLayout from '@/components/layout/CustomerLayout';
 import AdminDashboard from '@/pages/AdminDashboard';
 import AgentEditor from '@/pages/AgentEditor';
 import WidgetConfig from '@/pages/WidgetConfig';
-import CustomerLanding from '@/pages/CustomerLanding';
-import CustomerChat from '@/pages/CustomerChat';
+import Landing from '@/pages/Landing';
 
 function App() {
   return (
@@ -19,17 +17,14 @@ function App() {
          }
       }} />
       <Routes>
+        {/* Public Landing */}
+        <Route path="/" element={<Landing />} />
+
         {/* Admin Routes */}
-        <Route path="/" element={<AdminLayout />}>
+        <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="agent-editor" element={<AgentEditor />} />
           <Route path="widget-config" element={<WidgetConfig />} />
-        </Route>
-
-        {/* Customer Routes */}
-        <Route path="/musteri" element={<CustomerLayout />}>
-           <Route index element={<CustomerLanding />} />
-           <Route path="chat" element={<CustomerChat />} />
         </Route>
 
         {/* Fallback */}
