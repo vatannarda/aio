@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChatLog } from '@/types';
+import type { ChatLog } from '@/types';
 
 interface ChatTableProps {
   logs: ChatLog[];

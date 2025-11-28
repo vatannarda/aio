@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import StatCard from '@/components/features/StatCard';
 import ChatTable from '@/components/features/ChatTable';
 import Button from '@/components/ui/Button';
-import { BillingSummary, ChatLog } from '@/types';
+import type { BillingSummary, ChatLog } from '@/types';
 import { useTenant } from '@/context/TenantContext';
 import { getBillingSummary } from '@/services/api';
 import { cn } from '@/lib/utils';

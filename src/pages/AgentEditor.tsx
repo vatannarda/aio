@@ -8,7 +8,7 @@ import Textarea from '@/components/ui/Textarea';
 import Slider from '@/components/ui/Slider';
 import Button from '@/components/ui/Button';
 import { agentService } from '@/services/api';
-import { AgentConfig } from '@/types';
+import type { AgentConfig } from '@/types';
 import { useTenant } from '@/context/TenantContext';
 
 const AgentEditor: React.FC = () => {

@@ -1,5 +1,5 @@
-import axios, { AxiosInstance, AxiosError } from 'axios';
-import {
+import axios, { type AxiosInstance, type AxiosError } from 'axios';
+import type {
   AgentConfig,
   BillingSummary,
   ChatResponse,
@@ -46,7 +46,7 @@ const configureClient = (client: AxiosInstance) => {
     const tenantSlug = getActiveTenantSlug();
     const tenantId = getActiveTenantId();
 
-    if (process.env.NODE_ENV === 'development' && !tenantId) {
+    if (import.meta.env.DEV && !tenantId) {
       console.warn(`[API] Request to ${config.url} missing tenantId!`);
     }
 

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import Button from '@/components/ui/Button';
-import { Plan, PublicSignupResponse } from '@/types';
+import type { Plan, PublicSignupResponse } from '@/types';
 import { createCheckoutSession, signupTenant } from '@/services/api';
 import { CheckCircle2 } from 'lucide-react';
 
