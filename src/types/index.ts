@@ -10,7 +10,7 @@ export interface AgentConfig {
 
 export interface ChatMessage {
   id: string;
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: number;
 }
@@ -20,7 +20,9 @@ export interface ChatPayload {
 }
 
 export interface ChatResponse {
-  reply: string;
+  reply?: string;
+  limitReached?: boolean;
+  message?: string;
 }
 
 export interface ChatLog {
@@ -97,6 +99,13 @@ export interface TenantUsage {
   renewsAt: string;
   creditsRemaining: number;
   lastSyncAt?: string;
+}
+
+export interface BillingSummary {
+  planName: string;
+  remainingMessages: number;
+  limitReached: boolean;
+  message?: string;
 }
 
 export interface SignupPayload {

@@ -1,13 +1,50 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { MessageSquare, Users, Zap, Activity } from 'lucide-react';
+import { MessageSquare, Users, Zap, Activity, AlertTriangle, CreditCard } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import StatCard from '@/components/features/StatCard';
 import ChatTable from '@/components/features/ChatTable';
-import { ChatLog } from '@/types';
+import Button from '@/components/ui/Button';
+import { BillingSummary, ChatLog } from '@/types';
 import { useTenant } from '@/context/TenantContext';
+import { getBillingSummary } from '@/services/api';
+import { cn } from '@/lib/utils';
 
 const AdminDashboard: React.FC = () => {
   const { tenant, usage, tenantProfile } = useTenant();
+  const navigate = useNavigate();
+  const [billingSummary, setBillingSummary] = useState<BillingSummary | null>(null);
+  const [isBillingLoading, setIsBillingLoading] = useState(true);
+  const [billingError, setBillingError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchSummary = async () => {
+      setIsBillingLoading(true);
+      try {
+        const summary = await getBillingSummary();
+        if (!isMounted) return;
+        setBillingSummary(summary);
+        setBillingError(null);
+      } catch (error) {
+        if (!isMounted) return;
+        const message = error instanceof Error ? error.message : 'Unable to load billing info';
+        setBillingError(message);
+        setBillingSummary(null);
+      } finally {
+        if (isMounted) {
+          setIsBillingLoading(false);
+        }
+      }
+    };
+
+    fetchSummary();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [tenant?.slug]);
 
   const getPercent = (used?: number, limit?: number) => {
     if (!used || !limit || limit === 0) return '0%';
@@ -48,6 +85,14 @@ const AdminDashboard: React.FC = () => {
     { id: '4', platform: 'API', userId: 'sys_9982', messagePreview: 'Sistem sağlık kontrolü', responsePreview: 'Tüm sistemler çalışıyor', timestamp: '2 saat önce' },
   ];
 
+  const summaryLimitReached = billingSummary?.limitReached;
+  const remainingMessagesLabel = billingSummary ? billingSummary.remainingMessages.toLocaleString('tr-TR') : '—';
+  const limitNotice = billingSummary?.message ?? 'Mesaj limitiniz doldu. Lütfen planınızı yükseltin veya ek kredi satın alın.';
+  const billingCardClass = cn(
+    'glass-panel rounded-2xl border p-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between',
+    summaryLimitReached ? 'border-amber-500/40 bg-amber-500/5' : 'border-white/5'
+  );
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -69,6 +114,47 @@ const AdminDashboard: React.FC = () => {
              <span className="text-sm text-slate-300">Gerçek Zamanlı Veri</span>
           </div>
          </div>
+
+      <div className={billingCardClass}>
+        <div>
+          <p className="text-sm uppercase tracking-widest text-slate-500">Faturalama Özeti</p>
+          {billingError ? (
+            <p className="mt-2 text-sm text-red-300">Faturalama bilgisi yüklenemedi.</p>
+          ) : isBillingLoading || !billingSummary ? (
+            <div className="mt-4 space-y-2">
+              <div className="h-3 w-32 rounded bg-white/10 animate-pulse" />
+              <div className="h-3 w-48 rounded bg-white/10 animate-pulse" />
+            </div>
+          ) : (
+            <>
+              <h3 className="text-2xl font-semibold text-white mt-2">Mevcut Plan: {billingSummary.planName}</h3>
+              <p className="text-slate-300 text-sm mt-1">
+                Kalan mesaj kredisi: <span className="font-semibold text-white">{remainingMessagesLabel}</span>
+              </p>
+            </>
+          )}
+          {summaryLimitReached && !billingError && (
+            <div className="mt-3 flex items-center gap-2 text-amber-200 text-sm">
+              <AlertTriangle size={16} />
+              <span>{limitNotice}</span>
+            </div>
+          )}
+        </div>
+        <div className="flex flex-col gap-2 w-full md:w-auto md:items-end">
+          <Button
+            variant="primary"
+            size="lg"
+            className="md:min-w-[220px]"
+            onClick={() => navigate('/admin/billing')}
+          >
+            <CreditCard size={18} className="mr-2" />
+            Planı Yükselt / Kredi Al
+          </Button>
+          <p className="text-xs text-slate-500 text-center md:text-right max-w-sm">
+            Daha fazla mesaj kredisi ve gelişmiş özellikler için faturalama sayfasına gidin.
+          </p>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
          {stats.map((stat, index) => (
