@@ -31,6 +31,12 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/signup" element={<TenantSignup />} />
 
+          {/* Aliases for Vercel Deployment Test */}
+          <Route path="/customer" element={<Navigate to="/musteri" replace />} />
+          <Route path="/dashboard" element={<Navigate to="/admin" replace />} />
+          <Route path="/chat" element={<Navigate to="/musteri/chat" replace />} />
+          <Route path="/widget" element={<Navigate to="/admin/widget-config" replace />} />
+
           {/* Customer Experience */}
           <Route path="/musteri" element={<CustomerLayout />}>
             <Route index element={<CustomerLanding />} />
