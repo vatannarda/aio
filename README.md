@@ -55,6 +55,24 @@ Production-ready Admin and Customer dashboard for AIO Systems, featuring "Deep S
    systemctl reload nginx
    ```
 
+### Deploying to Vercel
+
+This project is optimized for deployment on Vercel as a Single Page Application (SPA).
+
+1. **Create New Project**: Import this repository in Vercel.
+2. **Build Configuration**:
+   - **Framework Preset**: `Vite`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+3. **Environment Variables**:
+   Add the following variables in the Vercel project settings:
+   - `VITE_API_BASE_URL`: Your backend API URL (e.g., `https://api.yourdomain.com`)
+   - `VITE_N8N_WEBHOOK_URL`: Your n8n webhook URL (e.g., `https://n8n.yourdomain.com/webhook`)
+   - `VITE_DEFAULT_TENANT_SLUG`: (Optional) Default tenant slug, e.g. `aio-default`
+   - `VITE_APP_NAME`: (Optional) App name, defaults to `AIO`
+
+The application gracefully handles missing API URLs by falling back to mock data (for the main API) or showing error messages (for chat/webhooks).
+
 ## 📂 Project Structure
 
 ```

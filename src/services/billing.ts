@@ -1,6 +1,6 @@
 import appApi from '@/services/api';
 import { publicPlans } from '@/lib/plans';
-import { BillingCheckoutPayload, BillingCheckoutResponse, BillingPlan } from '@/types';
+import type { BillingCheckoutPayload, BillingCheckoutResponse, BillingPlan } from '@/types';
 
 const fallbackPlans: BillingPlan[] = [
   ...publicPlans.map((plan) => ({
@@ -9,7 +9,7 @@ const fallbackPlans: BillingPlan[] = [
     description: plan.description,
     price: plan.priceMonthly,
     currency: 'USD',
-    interval: 'monthly',
+    interval: 'monthly' as const,
     type: 'plan' as const,
     messageLimit: plan.messageLimit,
     features: plan.features,
@@ -21,8 +21,8 @@ const fallbackPlans: BillingPlan[] = [
     description: 'Ani kampanyalar veya sezonluk yoğunluk için ideal ek paket.',
     price: 79,
     currency: 'USD',
-    interval: 'one_time',
-    type: 'credit_pack',
+    interval: 'one_time' as const,
+    type: 'credit_pack' as const,
     creditAmount: 5000,
   },
   {
@@ -31,8 +31,8 @@ const fallbackPlans: BillingPlan[] = [
     description: 'Büyüyen ekipler için indirimli toplu kredi.',
     price: 299,
     currency: 'USD',
-    interval: 'one_time',
-    type: 'credit_pack',
+    interval: 'one_time' as const,
+    type: 'credit_pack' as const,
     creditAmount: 25000,
   },
 ];

@@ -5,7 +5,7 @@ import Button from '@/components/ui/Button';
 import { useTenant } from '@/context/TenantContext';
 import { billingService } from '@/services/api';
 import toast from 'react-hot-toast';
-import { PlanProduct, PlanTier } from '@/types';
+import type { PlanProduct, PlanTier } from '@/types';
 
 const PLAN_OPTIONS: PlanProduct[] = [
   {

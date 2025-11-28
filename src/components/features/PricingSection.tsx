@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Check, Sparkles } from 'lucide-react';
 import Button from '@/components/ui/Button';
-import { Plan } from '@/types';
+import type { Plan } from '@/types';
 import { cn } from '@/lib/utils';
 
 interface PricingSectionProps {

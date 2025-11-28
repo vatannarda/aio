@@ -6,11 +6,11 @@ import React,
     useEffect,
     useMemo,
     useState,
-    ReactNode,
+    type ReactNode,
   } from 'react';
 import { useLocation } from 'react-router-dom';
 import { tenantService } from '@/services/api';
-import { TenantInfo, TenantProfile, TenantUsage, TenantSlug } from '@/types';
+import type { TenantInfo, TenantProfile, TenantUsage, TenantSlug } from '@/types';
 import {
   DEFAULT_TENANT_SLUG,
   getInitialTenantSlug,

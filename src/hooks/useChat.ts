@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { chatService } from '@/services/api';
 import { useTenant } from '@/context/TenantContext';
-import { ChatMessage } from '@/types';
+import type { ChatMessage } from '@/types';
 import { DEFAULT_TENANT_SLUG } from '@/lib/tenantIdentity';
 import toast from 'react-hot-toast';
 

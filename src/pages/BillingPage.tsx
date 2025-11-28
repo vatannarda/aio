@@ -4,7 +4,7 @@ import { CreditCard, Diamond, Gift, RefreshCcw } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { useTenant } from '@/context/TenantContext';
 import { createCheckoutSession, getBillingPlans } from '@/services/billing';
-import { BillingPlan } from '@/types';
+import type { BillingPlan } from '@/types';
 import { cn } from '@/lib/utils';
 
 const BillingPage: React.FC = () => {

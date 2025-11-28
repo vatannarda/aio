@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Settings, MessageSquare } from 'lucide-react';
-import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 
 const WidgetConfig: React.FC = () => {
