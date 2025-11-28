@@ -1,11 +1,13 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Send, Loader2, Bot, User } from 'lucide-react';
+import { MessageSquare, X, Send, Loader2, Bot, User, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Button from '@/components/ui/Button';
 import { useChat } from '@/hooks/useChat';
 import TypingIndicator from './TypingIndicator';
 import { useTenant } from '@/context/TenantContext';
+
+const LIMIT_NOTICE_FALLBACK = 'Your message limit has been reached. Please upgrade your plan from the admin dashboard.';
 
 interface ChatWidgetProps {
   isOpen?: boolean;
@@ -23,7 +25,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
   const toggle = externalOnToggle || (() => setInternalIsOpen(!internalIsOpen));
   
   const [input, setInput] = useState('');
-  const { messages, isLoading, sendMessage } = useChat(storageKey);
+  const { messages, isLoading, sendMessage, isLimitReached, limitMessage } = useChat(storageKey);
   const { tenant, tenantProfile } = useTenant();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -39,12 +41,14 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
 
   const handleSend = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || isLimitReached) return;
     
     const msg = input;
     setInput(''); // Clear immediately
     await sendMessage(msg);
   };
+
+  const limitNotice = limitMessage || LIMIT_NOTICE_FALLBACK;
 
   return (
     <>
@@ -131,35 +135,55 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
                         <p>Merhaba! Size nasıl yardımcı olabilirim?</p>
                     </div>
                 )}
-                {messages.map((msg) => (
-                  <motion.div
-                    key={msg.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={cn(
-                      "flex gap-3 max-w-[85%]",
-                      msg.role === 'user' ? "ml-auto flex-row-reverse" : ""
-                    )}
-                  >
-                    <div className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1",
-                      msg.role === 'user' ? "bg-electric-blue/20 text-electric-blue" : "bg-neon-purple/20 text-neon-purple"
-                    )}>
-                      {msg.role === 'user' ? <User size={14} /> : <Bot size={14} />}
-                    </div>
-                    <div className={cn(
-                      "p-3 rounded-2xl text-sm leading-relaxed",
-                      msg.role === 'user' 
-                        ? "bg-electric-blue text-white rounded-tr-none" 
-                        : "bg-white/[0.05] text-slate-200 border border-white/[0.05] rounded-tl-none"
-                    )}>
-                      {msg.content}
-                      <div className="mt-1 text-[10px] opacity-50 text-right">
-                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {messages.map((msg) => {
+                  const timeLabel = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                  if (msg.role === 'system') {
+                    return (
+                      <motion.div
+                        key={msg.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex justify-center"
+                      >
+                        <div className="max-w-sm w-full text-center px-3 py-2 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-100 text-xs leading-relaxed shadow-md shadow-amber-500/10">
+                          {msg.content}
+                          <div className="mt-1 text-[10px] text-amber-200/70">{timeLabel}</div>
+                        </div>
+                      </motion.div>
+                    );
+                  }
+
+                  return (
+                    <motion.div
+                      key={msg.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={cn(
+                        "flex gap-3 max-w-[85%]",
+                        msg.role === 'user' ? "ml-auto flex-row-reverse" : ""
+                      )}
+                    >
+                      <div className={cn(
+                        "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1",
+                        msg.role === 'user' ? "bg-electric-blue/20 text-electric-blue" : "bg-neon-purple/20 text-neon-purple"
+                      )}>
+                        {msg.role === 'user' ? <User size={14} /> : <Bot size={14} />}
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
+                      <div className={cn(
+                        "p-3 rounded-2xl text-sm leading-relaxed",
+                        msg.role === 'user' 
+                          ? "bg-electric-blue text-white rounded-tr-none" 
+                          : "bg-white/[0.05] text-slate-200 border border-white/[0.05] rounded-tl-none"
+                      )}>
+                        {msg.content}
+                        <div className="mt-1 text-[10px] opacity-50 text-right">
+                          {timeLabel}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
                 
                 {isLoading && (
                   <motion.div
@@ -178,20 +202,31 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
 
               {/* Input Area */}
               <div className="p-4 bg-[#0B0F19] border-t border-white/5">
+                {isLimitReached && (
+                  <div className="mb-3 flex items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
+                    <AlertTriangle size={14} className="flex-shrink-0" />
+                    <span>{limitNotice}</span>
+                  </div>
+                )}
                 <form onSubmit={handleSend} className="relative flex items-center gap-2">
                   <input
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    placeholder="Mesajınızı yazın..."
-                    className="flex-1 bg-white/[0.03] border border-white/[0.1] rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-electric-blue/50 focus:ring-1 focus:ring-electric-blue/50 outline-none transition-all"
+                    placeholder={
+                      isLimitReached
+                        ? 'Kredi limitiniz doldu. Lütfen panelden planınızı yükseltin.'
+                        : 'Mesajınızı yazın...'
+                    }
+                    disabled={isLimitReached}
+                    className="flex-1 bg-white/[0.03] border border-white/[0.1] rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-electric-blue/50 focus:ring-1 focus:ring-electric-blue/50 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <Button
                     type="submit"
                     variant="primary"
                     size="sm"
                     className="absolute right-2 h-9 w-9 p-0 rounded-lg"
-                    disabled={!input.trim() || isLoading}
+                    disabled={!input.trim() || isLoading || isLimitReached}
                   >
                     {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                   </Button>

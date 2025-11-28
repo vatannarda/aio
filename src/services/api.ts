@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import {
   AgentConfig,
+  BillingSummary,
   ChatResponse,
   CheckoutPayload,
   CheckoutResponse,
@@ -14,6 +15,8 @@ import {
   TenantUsage,
 } from '@/types';
 import { DEFAULT_TENANT_SLUG, getActiveTenantSlug } from '@/lib/tenantIdentity';
+
+type EnhancedApiError = Error & { originalError?: AxiosError };
 
 const normalizeUrl = (url?: string): string => {
   if (!url) return '';
@@ -63,7 +66,9 @@ const configureClient = (client: AxiosInstance) => {
       }
 
       console.error('API Error:', error);
-      return Promise.reject(new Error(message));
+      const enhancedError: EnhancedApiError = new Error(message) as EnhancedApiError;
+      enhancedError.originalError = error;
+      return Promise.reject(enhancedError);
     }
   );
 
@@ -222,6 +227,20 @@ const fallbackTenantUsage: Record<string, TenantUsage> = {
 
 const fallbackTenantsList: TenantInfo[] = Object.values(fallbackTenantProfiles).map((profile) => profile.tenant);
 
+const resolveFallbackBillingSummary = (slug?: string): BillingSummary => {
+  const resolvedSlug = slug && fallbackTenantProfiles[slug] ? slug : DEFAULT_TENANT_SLUG;
+  const profile = fallbackTenantProfiles[resolvedSlug] ?? fallbackTenantProfiles[DEFAULT_TENANT_SLUG];
+  const usage = fallbackTenantUsage[resolvedSlug] ?? fallbackTenantUsage[DEFAULT_TENANT_SLUG];
+  const remaining = Math.max(0, usage.messageLimit - usage.messageCount);
+
+  return {
+    planName: profile?.plan.name ?? 'Demo Plan',
+    remainingMessages: remaining,
+    limitReached: remaining <= 0,
+    message: remaining <= 0 ? 'Demo ortamında mesaj limitinize ulaştınız.' : undefined,
+  };
+};
+
 const resolveFallbackProfile = (slug?: string): TenantProfile => {
   const resolvedSlug = slug && fallbackTenantProfiles[slug] ? slug : DEFAULT_TENANT_SLUG;
   return fallbackTenantProfiles[resolvedSlug];
@@ -257,16 +276,41 @@ export const agentService = {
 };
 
 export const chatService = {
-  sendMessage: async (message: string): Promise<string> => {
+  sendMessage: async (message: string): Promise<ChatResponse> => {
     const context = getFallbackTenantIdentity();
-    const response = await webhookApi.post<ChatResponse>('/chat', {
-      message,
-      tenant_id: context.tenantId,
-      tenant_slug: context.tenantSlug,
-    });
+    const defaultLimitMessage = 'Your message limit has been reached. Please upgrade your plan from the admin panel.';
 
-    if (typeof response.data === 'string') return response.data;
-    return response.data.reply || 'No response content';
+    try {
+      const response = await webhookApi.post<ChatResponse>('/chat', {
+        message,
+        tenant_id: context.tenantId,
+        tenant_slug: context.tenantSlug,
+      });
+
+      const payload: ChatResponse =
+        typeof response.data === 'string'
+          ? { reply: response.data }
+          : response.data;
+
+      return {
+        reply: payload.reply ?? 'No response content',
+        limitReached: payload.limitReached ?? false,
+        message: payload.message,
+      };
+    } catch (error) {
+      const enhancedError = error as EnhancedApiError;
+      const axiosError = enhancedError.originalError;
+      if (axiosError?.response && [402, 403].includes(axiosError.response.status)) {
+        const errorPayload = axiosError.response.data as ChatResponse | undefined;
+        return {
+          reply: '',
+          limitReached: errorPayload?.limitReached ?? true,
+          message: errorPayload?.message ?? enhancedError.message ?? defaultLimitMessage,
+        };
+      }
+
+      throw error;
+    }
   },
 };
 
@@ -335,6 +379,17 @@ export const publicService = {
   },
 };
 
+// Backend is expected to expose GET /api/billing/summary to deliver plan and credit usage metadata.
+export async function getBillingSummary(): Promise<BillingSummary> {
+  const slug = getActiveTenantSlug();
+  if (!appApi.defaults.baseURL) {
+    return resolveFallbackBillingSummary(slug);
+  }
+
+  const response = await appApi.get<BillingSummary>('/api/billing/summary');
+  return response.data;
+}
+
 export const billingService = {
   async startCheckout(payload: CheckoutPayload): Promise<CheckoutResponse> {
     if (!appApi.defaults.baseURL) {
@@ -346,6 +401,7 @@ export const billingService = {
     const response = await appApi.post<CheckoutResponse>('/api/billing/checkout', payload);
     return response.data;
   },
+  getSummary: getBillingSummary,
 };
 
 // Backend is expected to expose POST /public/signup for public onboarding payloads.
