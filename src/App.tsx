@@ -11,7 +11,7 @@ import CustomerChat from '@/pages/CustomerChat';
 import PlanSelection from '@/pages/PlanSelection';
 import TenantUsage from '@/pages/TenantUsage';
 import TenantSignup from '@/pages/TenantSignup';
-import BillingPage from '@/pages/BillingPage';
+import Billing from '@/pages/Billing';
 import BillingResultPage from '@/pages/BillingResultPage';
 import { TenantProvider } from '@/context/TenantContext';
 
@@ -47,7 +47,7 @@ function App() {
           </Route>
 
           <Route path="/billing" element={<AdminLayout />}>
-            <Route index element={<BillingPage />} />
+            <Route index element={<Billing />} />
             <Route path="result" element={<BillingResultPage />} />
           </Route>
 
