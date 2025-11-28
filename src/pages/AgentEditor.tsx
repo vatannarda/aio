@@ -9,9 +9,10 @@ import Slider from '@/components/ui/Slider';
 import Button from '@/components/ui/Button';
 import { agentService } from '@/services/api';
 import { AgentConfig } from '@/types';
+import { useTenant } from '@/context/TenantContext';
 
 const AgentEditor: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState<AgentConfig>({
     name: '',
     role_type: 'general',
@@ -19,13 +20,17 @@ const AgentEditor: React.FC = () => {
     system_prompt: '',
     temperature: 0.7,
   });
+  const { tenant: activeTenant, tenantProfile, isLoading: tenantLoading } = useTenant();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSaving(true);
 
     try {
-      await agentService.updateAgent(formData);
+      await agentService.updateAgent(formData, {
+        tenantId: activeTenant?.id,
+        tenantSlug: activeTenant?.slug,
+      });
       toast.success('Ajan yapılandırması başarıyla kaydedildi!', {
         icon: '🚀',
         style: {
@@ -34,8 +39,9 @@ const AgentEditor: React.FC = () => {
           border: '1px solid rgba(255,255,255,0.1)',
         },
       });
-    } catch (error: any) {
-      toast.error(error.message || 'Yapılandırma kaydedilemedi', {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Yapılandırma kaydedilemedi';
+      toast.error(message, {
         style: {
           background: '#1e293b',
           color: '#ef4444',
@@ -43,11 +49,11 @@ const AgentEditor: React.FC = () => {
         },
       });
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
-  const handleChange = (field: keyof AgentConfig, value: any) => {
+  const handleChange = (field: keyof AgentConfig, value: AgentConfig[keyof AgentConfig]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -65,6 +71,14 @@ const AgentEditor: React.FC = () => {
         <p className="text-slate-400 text-lg">
           Yapay zeka ajanınızın kişiliğini ve davranış parametrelerini özelleştirin.
         </p>
+        <div className="mt-4 flex flex-wrap gap-3 text-xs md:text-sm text-slate-300">
+          <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10">
+            Aktif müşteri: {activeTenant?.name || 'Yükleniyor...'}
+          </span>
+          <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10">
+            Plan: {tenantProfile?.plan.name || 'Belirleniyor...'}
+          </span>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -157,7 +171,8 @@ const AgentEditor: React.FC = () => {
             variant="primary"
             size="lg"
             className="w-full"
-            isLoading={isLoading}
+            isLoading={isSaving || tenantLoading}
+            disabled={!activeTenant}
           >
             <Save size={20} className="mr-2" />
             Yapılandırmayı Kaydet

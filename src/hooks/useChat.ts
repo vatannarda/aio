@@ -1,18 +1,31 @@
 import { useState, useEffect, useCallback } from 'react';
-import { chatService } from '../services/api';
-import { ChatMessage } from '../types';
+import { chatService } from '@/services/api';
+import { useTenant } from '@/context/TenantContext';
+import { ChatMessage } from '@/types';
 import toast from 'react-hot-toast';
 
+const getStoredMessages = (key: string): ChatMessage[] => {
+  if (typeof window === 'undefined') return [];
+  const saved = localStorage.getItem(key);
+  return saved ? JSON.parse(saved) : [];
+};
+
 export function useChat(storageKey: string = 'aio-chat-history') {
-  const [messages, setMessages] = useState<ChatMessage[]>(() => {
-    const saved = localStorage.getItem(storageKey);
-    return saved ? JSON.parse(saved) : [];
-  });
+  const { tenant } = useTenant();
+  const tenantSlug = tenant?.slug || 'default';
+  const resolvedStorageKey = `${storageKey}-${tenantSlug}`;
+
+  const [messages, setMessages] = useState<ChatMessage[]>(() => getStoredMessages(resolvedStorageKey));
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(messages));
-  }, [messages, storageKey]);
+    setMessages(getStoredMessages(resolvedStorageKey));
+  }, [resolvedStorageKey]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(resolvedStorageKey, JSON.stringify(messages));
+  }, [messages, resolvedStorageKey]);
 
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim()) return;
@@ -28,7 +41,10 @@ export function useChat(storageKey: string = 'aio-chat-history') {
     setIsLoading(true);
 
     try {
-      const reply = await chatService.sendMessage(content);
+      const reply = await chatService.sendMessage(content, {
+        tenantId: tenant?.id,
+        tenantSlug: tenant?.slug,
+      });
       const assistantMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -36,17 +52,20 @@ export function useChat(storageKey: string = 'aio-chat-history') {
         timestamp: Date.now(),
       };
       setMessages((prev) => [...prev, assistantMsg]);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to send message");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to send message';
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [tenant?.id, tenant?.slug]);
 
   const clearHistory = useCallback(() => {
     setMessages([]);
-    localStorage.removeItem(storageKey);
-  }, [storageKey]);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(resolvedStorageKey);
+    }
+  }, [resolvedStorageKey]);
 
   return { messages, isLoading, sendMessage, clearHistory };
 }

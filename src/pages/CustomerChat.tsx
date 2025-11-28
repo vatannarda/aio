@@ -1,14 +1,16 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Send, Loader2, Bot, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Button from '@/components/ui/Button';
 import { useChat } from '@/hooks/useChat';
 import TypingIndicator from '@/components/features/TypingIndicator';
+import { useTenant } from '@/context/TenantContext';
 
 const CustomerChat: React.FC = () => {
   const [input, setInput] = useState('');
   const { messages, isLoading, sendMessage } = useChat('aio-customer-chat'); // Same key as landing
+  const { tenant, tenantProfile } = useTenant();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -38,8 +40,10 @@ const CustomerChat: React.FC = () => {
              </div>
           </div>
           <div>
-             <h2 className="text-white font-semibold">AIO Support Assistant</h2>
-             <p className="text-xs text-slate-400">Always here to help</p>
+             <h2 className="text-white font-semibold">{tenant?.name || 'AIO Support Assistant'}</h2>
+             <p className="text-xs text-slate-400">
+                {tenantProfile?.plan.name ? `${tenantProfile?.plan.name} Planı` : 'Always here to help'}
+             </p>
           </div>
        </div>
 

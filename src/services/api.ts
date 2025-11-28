@@ -1,54 +1,351 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
-import { AgentConfig, ChatResponse } from '../types';
+import {
+  AgentConfig,
+  ChatResponse,
+  CheckoutPayload,
+  CheckoutResponse,
+  SignupPayload,
+  SignupResponse,
+  TenantInfo,
+  TenantProfile,
+  TenantUsage,
+} from '@/types';
 
-const getBaseUrl = (): string => {
-  const envUrl = import.meta.env.VITE_N8N_WEBHOOK_URL;
-  if (!envUrl) {
-    console.error("VITE_N8N_WEBHOOK_URL is not defined in environment variables.");
-    return '';
-  }
-  return envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl;
+interface TenantRequestOptions {
+  tenantId?: string;
+  tenantSlug?: string;
+}
+
+const normalizeUrl = (url?: string): string => {
+  if (!url) return '';
+  return url.endsWith('/') ? url.slice(0, -1) : url;
 };
 
-const api: AxiosInstance = axios.create({
-  baseURL: getBaseUrl(),
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: 15000,
-});
-
-api.interceptors.response.use(
-  (response) => response,
-  (error: AxiosError) => {
-    let message = 'An unexpected error occurred.';
-    if (error.message === 'Network Error') {
-      message = 'Connection failed. Please check your internet or server status.';
-    } else if (error.response) {
-      message = `Server Error: ${error.response.statusText} (${error.response.status})`;
-    } else if (error.code === 'ECONNABORTED') {
-      message = 'Request timed out.';
-    }
-    
-    console.error('API Error:', error);
-    return Promise.reject(new Error(message));
+const getWebhookBaseUrl = (): string => {
+  const envUrl = import.meta.env.VITE_N8N_WEBHOOK_URL;
+  if (!envUrl) {
+    console.error('VITE_N8N_WEBHOOK_URL is not defined in environment variables.');
+    return '';
   }
+  return normalizeUrl(envUrl);
+};
+
+const getApiBaseUrl = (): string => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (!envUrl) {
+    console.warn('VITE_API_BASE_URL is not defined. Falling back to mock tenant data.');
+    return '';
+  }
+  return normalizeUrl(envUrl);
+};
+
+const DEFAULT_TENANT_SLUG = import.meta.env.VITE_DEFAULT_TENANT_SLUG || 'aio-default';
+
+const configureClient = (client: AxiosInstance) => {
+  client.interceptors.response.use(
+    (response) => response,
+    (error: AxiosError) => {
+      let message = 'An unexpected error occurred.';
+      if (error.message === 'Network Error') {
+        message = 'Connection failed. Please check your internet or server status.';
+      } else if (error.response) {
+        message = `Server Error: ${error.response.statusText} (${error.response.status})`;
+      } else if (error.code === 'ECONNABORTED') {
+        message = 'Request timed out.';
+      }
+
+      console.error('API Error:', error);
+      return Promise.reject(new Error(message));
+    }
+  );
+
+  return client;
+};
+
+const webhookApi = configureClient(
+  axios.create({
+    baseURL: getWebhookBaseUrl(),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    timeout: 15000,
+  })
 );
 
+const appApi = configureClient(
+  axios.create({
+    baseURL: getApiBaseUrl(),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    timeout: 15000,
+  })
+);
+
+const fallbackTenantProfiles: Record<string, TenantProfile> = {
+  'aio-default': {
+    tenant: {
+      id: 'tenant_aio_default',
+      name: 'AIO Default Tenant',
+      slug: 'aio-default',
+      plan_type: 'enterprise',
+      status: 'active',
+    },
+    plan: {
+      id: 'enterprise',
+      name: 'Enterprise',
+      price: 1999,
+      currency: 'USD',
+      interval: 'monthly',
+      description: 'Full access for high-volume teams.',
+      features: [
+        'Unlimited conversations',
+        'Advanced analytics',
+        'Priority support',
+        'Unlimited workspaces',
+      ],
+      highlight: true,
+      limitSummary: 'Unlimited agents · 1M monthly messages',
+    },
+    quotas: {
+      monthlyMessages: 1000000,
+      members: 100,
+      storageGb: 500,
+    },
+    branding: {
+      accentColor: '#3b82f6',
+    },
+  },
+  'kebapci-ahmet': {
+    tenant: {
+      id: 'tenant_kebapci',
+      name: 'Kebapçı Ahmet',
+      slug: 'kebapci-ahmet',
+      plan_type: 'starter',
+      status: 'trialing',
+    },
+    plan: {
+      id: 'starter',
+      name: 'Starter',
+      price: 49,
+      currency: 'USD',
+      interval: 'monthly',
+      description: 'Perfect for single-location businesses testing AI agents.',
+      features: [
+        'Up to 3 agents',
+        '3,000 monthly messages',
+        'Email support',
+      ],
+      limitSummary: '3 agents · 3K messages',
+    },
+    quotas: {
+      monthlyMessages: 3000,
+      members: 3,
+      storageGb: 10,
+    },
+    branding: {
+      accentColor: '#f97316',
+    },
+  },
+  'disci-ayse': {
+    tenant: {
+      id: 'tenant_disci',
+      name: 'Dişçi Ayşe',
+      slug: 'disci-ayse',
+      plan_type: 'pro',
+      status: 'active',
+    },
+    plan: {
+      id: 'pro',
+      name: 'Professional',
+      price: 249,
+      currency: 'USD',
+      interval: 'monthly',
+      description: 'Enhanced limits for scaling teams.',
+      features: [
+        'Up to 10 agents',
+        '50,000 monthly messages',
+        'Phone & email support',
+        'Audit logs',
+      ],
+      highlight: true,
+      limitSummary: '10 agents · 50K messages',
+    },
+    quotas: {
+      monthlyMessages: 50000,
+      members: 20,
+      storageGb: 50,
+    },
+    branding: {
+      accentColor: '#8b5cf6',
+    },
+  },
+};
+
+const fallbackTenantUsage: Record<string, TenantUsage> = {
+  'aio-default': {
+    messageCount: 420000,
+    messageLimit: 1000000,
+    agents: 24,
+    agentLimit: 100,
+    storageUsedGb: 120,
+    storageLimitGb: 500,
+    billingCycle: 'Mar 1 - Mar 31',
+    renewsAt: '2025-03-31',
+    creditsRemaining: 124500,
+    lastSyncAt: new Date().toISOString(),
+  },
+  'kebapci-ahmet': {
+    messageCount: 1200,
+    messageLimit: 3000,
+    agents: 1,
+    agentLimit: 3,
+    storageUsedGb: 1.2,
+    storageLimitGb: 10,
+    billingCycle: 'Mar 1 - Mar 31',
+    renewsAt: '2025-03-31',
+    creditsRemaining: 800,
+    lastSyncAt: new Date().toISOString(),
+  },
+  'disci-ayse': {
+    messageCount: 12000,
+    messageLimit: 50000,
+    agents: 5,
+    agentLimit: 10,
+    storageUsedGb: 12,
+    storageLimitGb: 50,
+    billingCycle: 'Mar 1 - Mar 31',
+    renewsAt: '2025-03-31',
+    creditsRemaining: 4800,
+    lastSyncAt: new Date().toISOString(),
+  },
+};
+
+const fallbackTenantsList: TenantInfo[] = Object.values(fallbackTenantProfiles).map((profile) => profile.tenant);
+
+const resolveFallbackProfile = (slug?: string): TenantProfile => {
+  const resolvedSlug = slug && fallbackTenantProfiles[slug] ? slug : DEFAULT_TENANT_SLUG;
+  return fallbackTenantProfiles[resolvedSlug];
+};
+
+const resolveSlugFromTenantId = (tenantId?: string): string => {
+  if (!tenantId) return DEFAULT_TENANT_SLUG;
+  const match = Object.entries(fallbackTenantProfiles).find(
+    ([, profile]) => profile.tenant.id === tenantId
+  );
+  return match?.[0] ?? DEFAULT_TENANT_SLUG;
+};
+
+const resolveTenantContext = (options?: TenantRequestOptions) => {
+  const fallbackProfile = resolveFallbackProfile(options?.tenantSlug);
+  return {
+    tenantId: options?.tenantId || fallbackProfile.tenant.id,
+    tenantSlug: options?.tenantSlug || fallbackProfile.tenant.slug,
+  };
+};
+
 export const agentService = {
-  updateAgent: async (config: AgentConfig) => {
-    const response = await api.post('/update-agent', config);
+  updateAgent: async (config: AgentConfig, options?: TenantRequestOptions) => {
+    const context = resolveTenantContext(options);
+    const response = await webhookApi.post('/update-agent', {
+      ...config,
+      tenant_id: context.tenantId,
+      tenant_slug: context.tenantSlug,
+    });
     return response.data;
   },
 };
 
 export const chatService = {
-  sendMessage: async (message: string): Promise<string> => {
-    const response = await api.post<ChatResponse>('/chat', { message });
-    // Handle case where response might be just text or different structure
+  sendMessage: async (message: string, options?: TenantRequestOptions): Promise<string> => {
+    const context = resolveTenantContext(options);
+    const response = await webhookApi.post<ChatResponse>('/chat', {
+      message,
+      tenant_id: context.tenantId,
+      tenant_slug: context.tenantSlug,
+    });
+
     if (typeof response.data === 'string') return response.data;
-    return response.data.reply || "No response content";
+    return response.data.reply || 'No response content';
   },
 };
 
-export default api;
+export const tenantService = {
+  async getConfig(slug?: string): Promise<TenantProfile> {
+    const resolvedSlug = slug || DEFAULT_TENANT_SLUG;
+    if (!appApi.defaults.baseURL) {
+      return resolveFallbackProfile(resolvedSlug);
+    }
+
+    try {
+      const response = await appApi.get<TenantProfile>('/api/tenant/config', {
+        params: { slug: resolvedSlug },
+      });
+      return response.data;
+    } catch (error) {
+      console.warn('Falling back to mock tenant config', error);
+      return resolveFallbackProfile(resolvedSlug);
+    }
+  },
+
+  async getUsage(tenantId?: string, tenantSlug?: string): Promise<TenantUsage> {
+    const resolvedSlug = tenantSlug || resolveSlugFromTenantId(tenantId);
+    if (!appApi.defaults.baseURL) {
+      return fallbackTenantUsage[resolvedSlug] ?? fallbackTenantUsage[DEFAULT_TENANT_SLUG];
+    }
+
+    try {
+      const response = await appApi.get<TenantUsage>('/api/tenant/usage', {
+        params: { tenantId, slug: resolvedSlug },
+      });
+      return response.data;
+    } catch (error) {
+      console.warn('Falling back to mock tenant usage', error);
+      return fallbackTenantUsage[resolvedSlug] ?? fallbackTenantUsage[DEFAULT_TENANT_SLUG];
+    }
+  },
+
+  async listTenants(): Promise<TenantInfo[]> {
+    if (!appApi.defaults.baseURL) {
+      return fallbackTenantsList;
+    }
+
+    try {
+      const response = await appApi.get<TenantInfo[]>('/api/tenant/list');
+      return response.data;
+    } catch (error) {
+      console.warn('Falling back to mock tenant list', error);
+      return fallbackTenantsList;
+    }
+  },
+};
+
+export const publicService = {
+  async signup(payload: SignupPayload): Promise<SignupResponse> {
+    if (!appApi.defaults.baseURL) {
+      return {
+        success: true,
+        tenantSlug: payload.subdomain || DEFAULT_TENANT_SLUG,
+        message: 'Demo mode signup completed.',
+      };
+    }
+
+    const response = await appApi.post<SignupResponse>('/api/public/signup', payload);
+    return response.data;
+  },
+};
+
+export const billingService = {
+  async startCheckout(payload: CheckoutPayload): Promise<CheckoutResponse> {
+    if (!appApi.defaults.baseURL) {
+      return {
+        checkoutUrl: `/billing/checkout?plan=${payload.plan}`,
+      };
+    }
+
+    const response = await appApi.post<CheckoutResponse>('/api/billing/checkout', payload);
+    return response.data;
+  },
+};
+
+export default appApi;
