@@ -15,6 +15,7 @@ import {
   DEFAULT_TENANT_SLUG,
   getInitialTenantSlug,
   setActiveTenantSlug,
+  setActiveTenantId,
 } from '@/lib/tenantIdentity';
 
 interface TenantContextValue {
@@ -86,6 +87,7 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     try {
       const profile = await tenantService.getConfig(tenantSlug);
       setTenantProfile(profile);
+      setActiveTenantId(profile.tenant.id);
       setError(null);
 
       const tenantUsage = await tenantService.getUsage(profile.tenant.id, profile.tenant.slug);

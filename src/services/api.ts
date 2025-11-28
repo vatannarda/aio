@@ -14,7 +14,7 @@ import {
   TenantProfile,
   TenantUsage,
 } from '@/types';
-import { DEFAULT_TENANT_SLUG, getActiveTenantSlug } from '@/lib/tenantIdentity';
+import { DEFAULT_TENANT_SLUG, getActiveTenantSlug, getActiveTenantId } from '@/lib/tenantIdentity';
 
 type EnhancedApiError = Error & { originalError?: AxiosError };
 
@@ -44,12 +44,22 @@ const getApiBaseUrl = (): string => {
 const configureClient = (client: AxiosInstance) => {
   client.interceptors.request.use((config) => {
     const tenantSlug = getActiveTenantSlug();
-    if (tenantSlug) {
-      config.headers = {
-        ...(config.headers ?? {}),
-        'X-Tenant-Slug': tenantSlug,
-      };
+    const tenantId = getActiveTenantId();
+
+    if (process.env.NODE_ENV === 'development' && !tenantId) {
+      console.warn(`[API] Request to ${config.url} missing tenantId!`);
     }
+
+    config.headers = config.headers || {};
+    
+    if (tenantSlug) {
+      config.headers['X-Tenant-Slug'] = tenantSlug;
+    }
+    
+    if (tenantId) {
+      config.headers['X-Tenant-ID'] = tenantId;
+    }
+
     return config;
   });
 
@@ -266,9 +276,12 @@ const resolveSlugFromTenantId = (tenantId?: string): string => {
 export const agentService = {
   updateAgent: async (config: AgentConfig) => {
     const context = getFallbackTenantIdentity();
+    const realTenantId = getActiveTenantId();
+    const tenantId = realTenantId || context.tenantId;
+
     const response = await webhookApi.post('/update-agent', {
       ...config,
-      tenant_id: context.tenantId,
+      tenant_id: tenantId,
       tenant_slug: context.tenantSlug,
     });
     return response.data;
@@ -278,12 +291,14 @@ export const agentService = {
 export const chatService = {
   sendMessage: async (message: string): Promise<ChatResponse> => {
     const context = getFallbackTenantIdentity();
+    const realTenantId = getActiveTenantId();
+    const tenantId = realTenantId || context.tenantId;
     const defaultLimitMessage = 'Your message limit has been reached. Please upgrade your plan from the admin panel.';
 
     try {
       const response = await webhookApi.post<ChatResponse>('/chat', {
         message,
-        tenant_id: context.tenantId,
+        tenant_id: tenantId,
         tenant_slug: context.tenantSlug,
       });
 
