@@ -1,10 +1,13 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Activity, BarChart3, Users, Database } from 'lucide-react';
+import { Activity, BarChart3, Users, Database, CreditCard } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useTenant } from '@/context/TenantContext';
+import Button from '@/components/ui/Button';
 
 const TenantUsage: React.FC = () => {
   const { tenant, usage } = useTenant();
+  const navigate = useNavigate();
 
   const metrics = [
     {
@@ -95,6 +98,24 @@ const TenantUsage: React.FC = () => {
             <p className="text-xl text-white font-semibold">{usage ? getPercent(usage.storageUsedGb, usage.storageLimitGb) : 0}% dolu</p>
           </div>
         </div>
+      </div>
+
+      <div className="glass-panel rounded-2xl border border-electric-blue/30 bg-electric-blue/10 p-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-[0.3em] text-electric-blue">KOTA UYARISI</p>
+          <h3 className="text-2xl font-semibold text-white mt-2">Planını yükselt veya ek kredi satın al</h3>
+          <p className="text-slate-300 text-sm mt-2 max-w-2xl">
+            Limitine yaklaştığında kesinti yaşamamak için faturalama sayfasından plan değişikliği yapabilir veya yoğun dönemler için kredi paketleri satın alabilirsin.
+          </p>
+        </div>
+        <Button
+          size="lg"
+          className="w-full md:w-auto"
+          onClick={() => navigate('/billing')}
+        >
+          <CreditCard size={18} className="mr-2" />
+          Planı Yükselt / Kredi Al
+        </Button>
       </div>
     </motion.div>
   );

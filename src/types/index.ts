@@ -74,6 +74,22 @@ export interface Plan {
   highlight?: boolean;
 }
 
+export type BillingProductType = 'plan' | 'credit_pack';
+
+export interface BillingPlan {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  currency: string;
+  interval?: 'monthly' | 'yearly' | 'one_time';
+  type: BillingProductType;
+  messageLimit?: number;
+  creditAmount?: number;
+  features?: string[];
+  highlight?: boolean;
+}
+
 export interface TenantProfile {
   tenant: TenantInfo;
   plan: PlanProduct;
@@ -144,6 +160,15 @@ export interface CheckoutPayload {
 }
 
 export interface CheckoutResponse {
+  checkoutUrl: string;
+}
+
+export interface BillingCheckoutPayload {
+  planId?: string;
+  creditPackId?: string;
+}
+
+export interface BillingCheckoutResponse {
   checkoutUrl: string;
 }
 
