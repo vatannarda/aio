@@ -13,7 +13,7 @@ const menuItems = [
   { icon: LayoutDashboard, label: 'Panel', path: '/admin' },
   { icon: Bot, label: 'Ajan Beyni', path: '/admin/agent-editor' },
   { icon: Layers, label: 'Planlar', path: '/admin/plans' },
-  { icon: CreditCard, label: 'Faturalama', path: '/admin/billing' },
+  { icon: CreditCard, label: 'Faturalama', path: '/billing' },
   { icon: BarChart3, label: 'Kullanım', path: '/admin/usage' },
   { icon: Settings, label: 'Chatbot Ayarları', path: '/admin/widget-config' },
 ];

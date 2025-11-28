@@ -145,7 +145,7 @@ const AdminDashboard: React.FC = () => {
             variant="primary"
             size="lg"
             className="md:min-w-[220px]"
-            onClick={() => navigate('/admin/billing')}
+            onClick={() => navigate('/billing')}
           >
             <CreditCard size={18} className="mr-2" />
             Planı Yükselt / Kredi Al

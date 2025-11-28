@@ -9,9 +9,10 @@ import Landing from '@/pages/Landing';
 import CustomerLanding from '@/pages/CustomerLanding';
 import CustomerChat from '@/pages/CustomerChat';
 import PlanSelection from '@/pages/PlanSelection';
-import BillingPortal from '@/pages/BillingPortal';
 import TenantUsage from '@/pages/TenantUsage';
 import TenantSignup from '@/pages/TenantSignup';
+import BillingPage from '@/pages/BillingPage';
+import BillingResultPage from '@/pages/BillingResultPage';
 import { TenantProvider } from '@/context/TenantContext';
 
 function App() {
@@ -42,8 +43,12 @@ function App() {
             <Route path="agent-editor" element={<AgentEditor />} />
             <Route path="widget-config" element={<WidgetConfig />} />
             <Route path="plans" element={<PlanSelection />} />
-            <Route path="billing" element={<BillingPortal />} />
             <Route path="usage" element={<TenantUsage />} />
+          </Route>
+
+          <Route path="/billing" element={<AdminLayout />}>
+            <Route index element={<BillingPage />} />
+            <Route path="result" element={<BillingResultPage />} />
           </Route>
 
           {/* Fallback */}
