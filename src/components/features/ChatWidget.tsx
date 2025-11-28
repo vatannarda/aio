@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import Button from '@/components/ui/Button';
 import { useChat } from '@/hooks/useChat';
 import TypingIndicator from './TypingIndicator';
+import { useTenant } from '@/context/TenantContext';
 
 interface ChatWidgetProps {
   isOpen?: boolean;
@@ -23,6 +24,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
   
   const [input, setInput] = useState('');
   const { messages, isLoading, sendMessage } = useChat(storageKey);
+  const { tenant, tenantProfile } = useTenant();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -99,10 +101,17 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
                     </div>
                   </div>
                   <div>
-                    <h3 className="font-bold text-white text-sm">AIO Asistan</h3>
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-xs text-emerald-400 font-medium">Çevrimiçi</span>
+                    <h3 className="font-bold text-white text-sm">{tenant?.name || 'AIO Asistan'}</h3>
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-xs text-emerald-400 font-medium">
+                          {tenant?.status === 'suspended' ? 'Pasif' : 'Çevrimiçi'}
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-slate-500 uppercase tracking-wide">
+                        {tenantProfile?.plan.name || 'Standart Plan'}
+                      </span>
                     </div>
                   </div>
                 </div>

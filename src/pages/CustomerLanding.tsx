@@ -4,9 +4,11 @@ import { MessageCircle, Shield, Zap } from 'lucide-react';
 import ChatWidget from '@/components/features/ChatWidget';
 import Button from '@/components/ui/Button';
 import { useNavigate } from 'react-router-dom';
+import { useTenant } from '@/context/TenantContext';
 
 const CustomerLanding: React.FC = () => {
   const navigate = useNavigate();
+  const { tenant } = useTenant();
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] text-center space-y-12">
@@ -17,7 +19,7 @@ const CustomerLanding: React.FC = () => {
          className="space-y-6 max-w-2xl"
       >
          <h1 className="text-5xl md:text-6xl font-bold text-white tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">
-           How can we help you today?
+           How can we help {tenant?.name ? `${tenant?.name}` : 'you'} today?
          </h1>
          <p className="text-lg text-slate-400 leading-relaxed">
            Our AI-powered assistant is here to help you with your account, billing, and technical questions instantly.
@@ -29,6 +31,9 @@ const CustomerLanding: React.FC = () => {
             </Button>
             <Button size="lg" variant="outline" className="rounded-full px-8">
                Browse FAQ
+            </Button>
+            <Button size="lg" variant="ghost" className="rounded-full px-8" onClick={() => navigate('/signup')}>
+               Launch your workspace
             </Button>
          </div>
       </motion.div>

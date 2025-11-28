@@ -1,11 +1,14 @@
 import React from 'react';
 import { Menu, Bell, Search } from 'lucide-react';
+import { useTenant } from '@/context/TenantContext';
 
 interface HeaderProps {
   onMenuClick: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
+  const { tenant, tenantProfile, availableTenants, switchTenant, isLoading } = useTenant();
+
   return (
     <header className="h-20 px-6 glass-panel border-b border-white/[0.05] flex items-center justify-between sticky top-0 z-30 backdrop-blur-xl bg-black/20">
       <div className="flex items-center gap-4">
@@ -28,6 +31,23 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
       </div>
 
       <div className="flex items-center gap-6">
+        {/* Tenant Switcher */}
+        <div className="hidden md:flex flex-col">
+          <span className="text-[10px] uppercase tracking-widest text-slate-500">Aktif Müşteri</span>
+          <select
+            className="bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-sm text-white focus:ring-1 focus:ring-electric-blue/40"
+            value={tenant?.slug || ''}
+            onChange={(e) => switchTenant(e.target.value)}
+            disabled={isLoading || availableTenants.length === 0}
+          >
+            {availableTenants.map((item) => (
+              <option key={item.id} value={item.slug} className="bg-slate-900 text-white">
+                {item.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {/* System Status */}
         <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
           <span className="relative flex h-2 w-2">
@@ -35,6 +55,13 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </span>
           <span className="text-xs font-medium text-emerald-400">Sistem Çevrimiçi</span>
+        </div>
+
+        <div className="hidden md:flex flex-col text-right">
+          <span className="text-[10px] uppercase tracking-widest text-slate-500">Plan</span>
+          <span className="text-sm font-semibold text-white">
+            {tenantProfile?.plan.name || 'Belirsiz'}
+          </span>
         </div>
 
         <button className="relative p-2 hover:bg-white/10 rounded-full transition-colors text-slate-300">

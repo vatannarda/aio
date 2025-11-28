@@ -83,3 +83,11 @@ src/
 The application connects to n8n webhooks defined in `.env`:
 - **Agent Config:** POST `/update-agent`
 - **Chat:** POST `/chat`
+
+Phase 3 introduces tenant-aware placeholders for the upcoming backend:
+- **Tenant signup:** `POST /api/public/signup`
+- **Tenant config:** `GET /api/tenant/config?slug={tenant}`
+- **Tenant usage:** `GET /api/tenant/usage?tenantId={id}`
+- **Billing checkout:** `POST /api/billing/checkout`
+
+If `VITE_API_BASE_URL` is not configured, the frontend falls back to rich demo data so you can design/QA the multi-tenant flows without a running backend.
