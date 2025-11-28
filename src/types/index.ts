@@ -1,3 +1,5 @@
+export type TenantSlug = string;
+
 export interface AgentConfig {
   name: string;
   role_type: 'sales' | 'support' | 'general';
@@ -41,7 +43,7 @@ export type PlanTier = 'starter' | 'pro' | 'enterprise';
 export interface TenantInfo {
   id: string;
   name: string;
-  slug: string;
+  slug: TenantSlug;
   plan_type: PlanTier;
   status: 'active' | 'trialing' | 'suspended';
   created_at?: string;
@@ -98,7 +100,7 @@ export interface SignupPayload {
 
 export interface SignupResponse {
   success: boolean;
-  tenantSlug: string;
+  tenantSlug: TenantSlug;
   message?: string;
 }
 

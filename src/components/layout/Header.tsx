@@ -8,6 +8,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   const { tenant, tenantProfile, availableTenants, switchTenant, isLoading } = useTenant();
+  const tenantLabel = tenant?.name || tenant?.slug || '';
 
   return (
     <header className="h-20 px-6 glass-panel border-b border-white/[0.05] flex items-center justify-between sticky top-0 z-30 backdrop-blur-xl bg-black/20">
@@ -32,7 +33,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
 
       <div className="flex items-center gap-6">
         {/* Tenant Switcher */}
-        <div className="hidden md:flex flex-col">
+        <div className="hidden md:flex flex-col min-w-[220px]">
           <span className="text-[10px] uppercase tracking-widest text-slate-500">Aktif Müşteri</span>
           <select
             className="bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-sm text-white focus:ring-1 focus:ring-electric-blue/40"
@@ -40,12 +41,20 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
             onChange={(e) => switchTenant(e.target.value)}
             disabled={isLoading || availableTenants.length === 0}
           >
+            {!tenant && (
+              <option value="" disabled className="bg-slate-900 text-white">
+                {isLoading ? 'Tenantlar yükleniyor...' : 'Tenant seçin'}
+              </option>
+            )}
             {availableTenants.map((item) => (
               <option key={item.id} value={item.slug} className="bg-slate-900 text-white">
                 {item.name}
               </option>
             ))}
           </select>
+          <span className="text-[11px] text-slate-500 mt-1">
+            {tenantLabel ? `Managing: ${tenantLabel}` : 'No tenant selected'}
+          </span>
         </div>
 
         {/* System Status */}

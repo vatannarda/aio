@@ -10,11 +10,7 @@ import {
   TenantProfile,
   TenantUsage,
 } from '@/types';
-
-interface TenantRequestOptions {
-  tenantId?: string;
-  tenantSlug?: string;
-}
+import { DEFAULT_TENANT_SLUG, getActiveTenantSlug } from '@/lib/tenantIdentity';
 
 const normalizeUrl = (url?: string): string => {
   if (!url) return '';
@@ -39,9 +35,18 @@ const getApiBaseUrl = (): string => {
   return normalizeUrl(envUrl);
 };
 
-const DEFAULT_TENANT_SLUG = import.meta.env.VITE_DEFAULT_TENANT_SLUG || 'aio-default';
-
 const configureClient = (client: AxiosInstance) => {
+  client.interceptors.request.use((config) => {
+    const tenantSlug = getActiveTenantSlug();
+    if (tenantSlug) {
+      config.headers = {
+        ...(config.headers ?? {}),
+        'X-Tenant-Slug': tenantSlug,
+      };
+    }
+    return config;
+  });
+
   client.interceptors.response.use(
     (response) => response,
     (error: AxiosError) => {
@@ -131,11 +136,7 @@ const fallbackTenantProfiles: Record<string, TenantProfile> = {
       currency: 'USD',
       interval: 'monthly',
       description: 'Perfect for single-location businesses testing AI agents.',
-      features: [
-        'Up to 3 agents',
-        '3,000 monthly messages',
-        'Email support',
-      ],
+      features: ['Up to 3 agents', '3,000 monthly messages', 'Email support'],
       limitSummary: '3 agents · 3K messages',
     },
     quotas: {
@@ -162,12 +163,7 @@ const fallbackTenantProfiles: Record<string, TenantProfile> = {
       currency: 'USD',
       interval: 'monthly',
       description: 'Enhanced limits for scaling teams.',
-      features: [
-        'Up to 10 agents',
-        '50,000 monthly messages',
-        'Phone & email support',
-        'Audit logs',
-      ],
+      features: ['Up to 10 agents', '50,000 monthly messages', 'Phone & email support', 'Audit logs'],
       highlight: true,
       limitSummary: '10 agents · 50K messages',
     },
@@ -228,6 +224,15 @@ const resolveFallbackProfile = (slug?: string): TenantProfile => {
   return fallbackTenantProfiles[resolvedSlug];
 };
 
+const getFallbackTenantIdentity = () => {
+  const slug = getActiveTenantSlug();
+  const fallbackProfile = fallbackTenantProfiles[slug] ?? fallbackTenantProfiles[DEFAULT_TENANT_SLUG];
+  return {
+    tenantId: fallbackProfile.tenant.id,
+    tenantSlug: slug,
+  };
+};
+
 const resolveSlugFromTenantId = (tenantId?: string): string => {
   if (!tenantId) return DEFAULT_TENANT_SLUG;
   const match = Object.entries(fallbackTenantProfiles).find(
@@ -236,17 +241,9 @@ const resolveSlugFromTenantId = (tenantId?: string): string => {
   return match?.[0] ?? DEFAULT_TENANT_SLUG;
 };
 
-const resolveTenantContext = (options?: TenantRequestOptions) => {
-  const fallbackProfile = resolveFallbackProfile(options?.tenantSlug);
-  return {
-    tenantId: options?.tenantId || fallbackProfile.tenant.id,
-    tenantSlug: options?.tenantSlug || fallbackProfile.tenant.slug,
-  };
-};
-
 export const agentService = {
-  updateAgent: async (config: AgentConfig, options?: TenantRequestOptions) => {
-    const context = resolveTenantContext(options);
+  updateAgent: async (config: AgentConfig) => {
+    const context = getFallbackTenantIdentity();
     const response = await webhookApi.post('/update-agent', {
       ...config,
       tenant_id: context.tenantId,
@@ -257,8 +254,8 @@ export const agentService = {
 };
 
 export const chatService = {
-  sendMessage: async (message: string, options?: TenantRequestOptions): Promise<string> => {
-    const context = resolveTenantContext(options);
+  sendMessage: async (message: string): Promise<string> => {
+    const context = getFallbackTenantIdentity();
     const response = await webhookApi.post<ChatResponse>('/chat', {
       message,
       tenant_id: context.tenantId,
@@ -272,7 +269,7 @@ export const chatService = {
 
 export const tenantService = {
   async getConfig(slug?: string): Promise<TenantProfile> {
-    const resolvedSlug = slug || DEFAULT_TENANT_SLUG;
+    const resolvedSlug = slug || getActiveTenantSlug();
     if (!appApi.defaults.baseURL) {
       return resolveFallbackProfile(resolvedSlug);
     }
