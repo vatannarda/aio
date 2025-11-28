@@ -91,3 +91,15 @@ Phase 3 introduces tenant-aware placeholders for the upcoming backend:
 - **Billing checkout:** `POST /api/billing/checkout`
 
 If `VITE_API_BASE_URL` is not configured, the frontend falls back to rich demo data so you can design/QA the multi-tenant flows without a running backend.
+
+## 🏢 Tenant Context & Multi-Tenant API
+
+- `TenantProvider` (src/context/TenantContext.tsx) boots the admin UI with a tenant slug that is read from the `tenant` query-string or `localStorage` (`aio-active-tenant`).
+- `useTenant()` exposes the active `tenant`, usage/profile responses, and helpers such as `setTenant`/`switchTenant` so every admin page can react to tenant changes.
+- `src/lib/tenantIdentity.ts` keeps the slug in sync between React and non-React modules so background code (like services) can read the same value without a hook.
+- `src/services/api.ts` now injects `X-Tenant-Slug` into **all** requests via an Axios interceptor, so every webhook/API call automatically carries the tenant identity.
+- Admin headers clearly display the tenant being managed ("Managing: <tenant>") and surface a placeholder when no tenant is selected to avoid ambiguous sessions.
+
+### Backend expectations
+
+The backend must read the `X-Tenant-Slug` header (or the `tenant_slug` payload fields we already send to n8n webhooks) and enforce isolation server-side. A future `/api/me` endpoint can return the default tenant slug + metadata so the frontend no longer needs query params, but the context + storage helpers are already prepared for that response.

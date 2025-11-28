@@ -1,64 +1,70 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  ReactNode,
-} from 'react';
+import React,
+  {
+    createContext,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useState,
+    ReactNode,
+  } from 'react';
 import { useLocation } from 'react-router-dom';
 import { tenantService } from '@/services/api';
-import { TenantInfo, TenantProfile, TenantUsage } from '@/types';
+import { TenantInfo, TenantProfile, TenantUsage, TenantSlug } from '@/types';
+import {
+  DEFAULT_TENANT_SLUG,
+  getInitialTenantSlug,
+  setActiveTenantSlug,
+} from '@/lib/tenantIdentity';
 
 interface TenantContextValue {
   tenant: TenantInfo | null;
   tenantProfile: TenantProfile | null;
   usage: TenantUsage | null;
-  tenantSlug: string;
+  tenantSlug: TenantSlug;
   availableTenants: TenantInfo[];
   isLoading: boolean;
   error: string | null;
-  switchTenant: (slug: string) => void;
+  setTenant: (tenant: TenantInfo | null) => void;
+  switchTenant: (slug: TenantSlug) => void;
   refreshTenant: () => Promise<void>;
 }
 
 const TenantContext = createContext<TenantContextValue | undefined>(undefined);
-const STORAGE_KEY = 'aio-active-tenant';
-const DEFAULT_TENANT_SLUG = import.meta.env.VITE_DEFAULT_TENANT_SLUG || 'aio-default';
-
-const getInitialSlug = (): string => {
-  if (typeof window === 'undefined') return DEFAULT_TENANT_SLUG;
-  return localStorage.getItem(STORAGE_KEY) || DEFAULT_TENANT_SLUG;
-};
 
 export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const location = useLocation();
-  const [tenantSlug, setTenantSlug] = useState<string>(getInitialSlug);
+  const [tenantSlug, setTenantSlug] = useState<TenantSlug>(getInitialTenantSlug);
   const [tenantProfile, setTenantProfile] = useState<TenantProfile | null>(null);
   const [usage, setUsage] = useState<TenantUsage | null>(null);
   const [availableTenants, setAvailableTenants] = useState<TenantInfo[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const persistSlug = useCallback((slug: string) => {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem(STORAGE_KEY, slug);
-  }, []);
-
   const switchTenant = useCallback(
-    (slug: string) => {
-      setTenantSlug(slug);
-      persistSlug(slug);
+    (slug: TenantSlug) => {
+      const resolved = setActiveTenantSlug(slug);
+      setTenantSlug(resolved);
     },
-    [persistSlug]
+    []
+  );
+
+  const setTenant = useCallback(
+    (nextTenant: TenantInfo | null) => {
+      if (!nextTenant) {
+        switchTenant(DEFAULT_TENANT_SLUG);
+        return;
+      }
+      switchTenant(nextTenant.slug);
+    },
+    [switchTenant]
   );
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const slugFromQuery = params.get('tenant');
     if (slugFromQuery && slugFromQuery !== tenantSlug) {
-      switchTenant(slugFromQuery);
+      switchTenant(slugFromQuery as TenantSlug);
     }
   }, [location.search, switchTenant, tenantSlug]);
 
@@ -100,7 +106,7 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   useEffect(() => {
     if (!tenantProfile) return;
     setAvailableTenants((prev) => {
-      const exists = prev.some((tenant) => tenant.slug === tenantProfile.tenant.slug);
+      const exists = prev.some((tenantItem) => tenantItem.slug === tenantProfile.tenant.slug);
       return exists ? prev : [...prev, tenantProfile.tenant];
     });
   }, [tenantProfile]);
@@ -114,10 +120,21 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       availableTenants,
       isLoading,
       error,
+      setTenant,
       switchTenant,
       refreshTenant,
     }),
-    [tenantProfile, usage, tenantSlug, availableTenants, isLoading, error, switchTenant, refreshTenant]
+    [
+      tenantProfile,
+      usage,
+      tenantSlug,
+      availableTenants,
+      isLoading,
+      error,
+      setTenant,
+      switchTenant,
+      refreshTenant,
+    ]
   );
 
   return <TenantContext.Provider value={value}>{children}</TenantContext.Provider>;

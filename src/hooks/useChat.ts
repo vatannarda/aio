@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { chatService } from '@/services/api';
 import { useTenant } from '@/context/TenantContext';
 import { ChatMessage } from '@/types';
+import { DEFAULT_TENANT_SLUG } from '@/lib/tenantIdentity';
 import toast from 'react-hot-toast';
 
 const getStoredMessages = (key: string): ChatMessage[] => {
@@ -12,7 +13,7 @@ const getStoredMessages = (key: string): ChatMessage[] => {
 
 export function useChat(storageKey: string = 'aio-chat-history') {
   const { tenant } = useTenant();
-  const tenantSlug = tenant?.slug || 'default';
+  const tenantSlug = tenant?.slug || DEFAULT_TENANT_SLUG;
   const resolvedStorageKey = `${storageKey}-${tenantSlug}`;
 
   const [messages, setMessages] = useState<ChatMessage[]>(() => getStoredMessages(resolvedStorageKey));
@@ -41,10 +42,7 @@ export function useChat(storageKey: string = 'aio-chat-history') {
     setIsLoading(true);
 
     try {
-      const reply = await chatService.sendMessage(content, {
-        tenantId: tenant?.id,
-        tenantSlug: tenant?.slug,
-      });
+      const reply = await chatService.sendMessage(content);
       const assistantMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -58,7 +56,7 @@ export function useChat(storageKey: string = 'aio-chat-history') {
     } finally {
       setIsLoading(false);
     }
-  }, [tenant?.id, tenant?.slug]);
+  }, []);
 
   const clearHistory = useCallback(() => {
     setMessages([]);

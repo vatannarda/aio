@@ -27,10 +27,7 @@ const AgentEditor: React.FC = () => {
     setIsSaving(true);
 
     try {
-      await agentService.updateAgent(formData, {
-        tenantId: activeTenant?.id,
-        tenantSlug: activeTenant?.slug,
-      });
+      await agentService.updateAgent(formData);
       toast.success('Ajan yapılandırması başarıyla kaydedildi!', {
         icon: '🚀',
         style: {
