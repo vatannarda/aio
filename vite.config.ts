@@ -5,6 +5,13 @@ import { fileURLToPath, URL } from 'node:url'
 export default defineConfig({
   plugins: [react()],
   base: '/',
+  build: {
+    outDir: 'dist',
+    sourcemap: false
+  },
+  server: {
+    port: 3000
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
