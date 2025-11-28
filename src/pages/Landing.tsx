@@ -1,16 +1,26 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, ShieldCheck, Zap, BarChart3 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Button from '@/components/ui/Button';
 import ChatWidget from '@/components/features/ChatWidget';
+import PricingSection from '@/components/features/PricingSection';
+import { publicPlans } from '@/lib/plans';
 
 const Landing: React.FC = () => {
+  const navigate = useNavigate();
+
   const features = [
     { icon: ShieldCheck, title: 'Kurumsal Güvenlik', desc: 'Banka düzeyinde şifreleme ve rol tabanlı erişim kontrolü.' },
     { icon: Zap, title: 'Işık Hızında', desc: 'Edge önbellekleme ve global CDN ile optimize edilmiş performans.' },
     { icon: BarChart3, title: 'Gerçek Zamanlı Analitik', desc: 'Yapay zeka etkileşimlerinize dair derinlemesine içgörüler.' },
   ];
+
+  const handlePlanSelect = (planId: string) => {
+    navigate(`/signup?planId=${planId}`);
+  };
+
+  const handleHeroCta = () => handlePlanSelect(publicPlans[0].id);
 
   return (
     <div className="min-h-screen bg-deep-space text-slate-400 font-sans selection:bg-neon-purple/30 selection:text-white relative overflow-x-hidden flex flex-col">
@@ -36,22 +46,22 @@ const Landing: React.FC = () => {
               Müşterilerinizle 7/24 konuşan, satış yapan ve destek veren yapay zeka personeliniz.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/admin">
-                <Button size="lg" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full sm:w-auto" onClick={handleHeroCta}>
+                Paket satın al
+                <ArrowRight size={18} className="ml-2" />
+              </Button>
+              <Link to="/admin" className="w-full sm:w-auto">
+                <Button variant="outline" size="lg" className="w-full">
                   Yönetim Paneline Git
-                  <ArrowRight size={18} className="ml-2" />
                 </Button>
               </Link>
-              <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                Dökümantasyon
-              </Button>
             </div>
           </motion.div>
         </div>
       </div>
 
       {/* Features Grid */}
-      <div className="max-w-6xl mx-auto px-6 pb-24 relative z-10">
+      <div className="max-w-6xl mx-auto px-6 pb-16 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {features.map((feature, idx) => (
             <motion.div
@@ -72,6 +82,10 @@ const Landing: React.FC = () => {
             </motion.div>
           ))}
         </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-6 pb-24 relative z-10 w-full">
+        <PricingSection plans={publicPlans} onSelectPlan={(plan) => handlePlanSelect(plan.id)} />
       </div>
 
       <ChatWidget />

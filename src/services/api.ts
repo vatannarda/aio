@@ -4,6 +4,9 @@ import {
   ChatResponse,
   CheckoutPayload,
   CheckoutResponse,
+  CheckoutSessionResponse,
+  PublicSignupPayload,
+  PublicSignupResponse,
   SignupPayload,
   SignupResponse,
   TenantInfo,
@@ -344,5 +347,30 @@ export const billingService = {
     return response.data;
   },
 };
+
+// Backend is expected to expose POST /public/signup for public onboarding payloads.
+export async function signupTenant(payload: PublicSignupPayload): Promise<PublicSignupResponse> {
+  if (!appApi.defaults.baseURL) {
+    return {
+      success: true,
+      message: `Demo kaydı tamamlandı. Plan: ${payload.planId}`,
+    };
+  }
+
+  const response = await appApi.post<PublicSignupResponse>('/public/signup', payload);
+  return response.data;
+}
+
+// Backend is expected to expose POST /billing/checkout to initiate payment links for public signups.
+export async function createCheckoutSession(planId: string): Promise<CheckoutSessionResponse> {
+  if (!appApi.defaults.baseURL) {
+    return {
+      redirectUrl: `/billing/checkout?planId=${planId}`,
+    };
+  }
+
+  const response = await appApi.post<CheckoutSessionResponse>('/billing/checkout', { planId });
+  return response.data;
+}
 
 export default appApi;

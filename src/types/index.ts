@@ -62,6 +62,16 @@ export interface PlanProduct {
   limitSummary: string;
 }
 
+export interface Plan {
+  id: string;
+  name: string;
+  description: string;
+  priceMonthly: number;
+  messageLimit: number;
+  features?: string[];
+  highlight?: boolean;
+}
+
 export interface TenantProfile {
   tenant: TenantInfo;
   plan: PlanProduct;
@@ -104,6 +114,20 @@ export interface SignupResponse {
   message?: string;
 }
 
+export interface PublicSignupPayload {
+  businessName: string;
+  contactEmail: string;
+  websiteUrl?: string;
+  industry?: string;
+  planId: string;
+}
+
+export interface PublicSignupResponse {
+  success: boolean;
+  redirectUrl?: string;
+  message?: string;
+}
+
 export interface CheckoutPayload {
   tenantId: string;
   plan: PlanTier;
@@ -112,4 +136,8 @@ export interface CheckoutPayload {
 
 export interface CheckoutResponse {
   checkoutUrl: string;
+}
+
+export interface CheckoutSessionResponse {
+  redirectUrl: string;
 }
